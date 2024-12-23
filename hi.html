@@ -1,9 +1,125 @@
-<html>
-  <head>
-    <title>Goodbye</title>
-  </head>
-  <body>
-    <h1>Goodbye World</h1>
-    <a href="hi.html">Hi Page</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        #gameCanvas {
+            display: block;
+            margin: auto;
+            background: #555;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let car = {
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 70,
+            width: 40,
+            height: 70,
+            speed: 5
+        };
+
+        let obstacles = [];
+        let score = 0;
+        let gameOver = false;
+
+        function drawCar() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = 'blue';
+            for (let i = 0; i < obstacles.length; i++) {
+                ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+            }
+        }
+
+        function createObstacle() {
+            let width = Math.random() * 60 + 20;
+            let x = Math.random() * (canvas.width - width);
+            let obstacle = {
+                x: x,
+                y: 0,
+                width: width,
+                height: 20,
+                speed: 3 + Math.random() * 2
+            };
+            obstacles.push(obstacle);
+        }
+
+        function updateObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].y += obstacles[i].speed;
+                if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    score += 10;
+                }
+            }
+        }
+
+        function checkCollision() {
+            for (let i = 0; i < obstacles.length; i++) {
+                if (car.x < obstacles[i].x + obstacles[i].width &&
+                    car.x + car.width > obstacles[i].x &&
+                    car.y < obstacles[i].y + obstacles[i].height &&
+                    car.y + car.height > obstacles[i].y) {
+                    gameOver = true;
+                }
+            }
+        }
+
+        function updateGame() {
+            if (gameOver) {
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over!', canvas.width / 4, canvas.height / 2);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCar();
+            drawObstacles();
+            updateObstacles();
+            checkCollision();
+            document.getElementById('score').textContent = 'Score: ' + score;
+
+            requestAnimationFrame(updateGame);
+        }
+
+        function moveCar(e) {
+            if (e.keyCode === 37 && car.x > 0) {
+                car.x -= car.speed;
+            } else if (e.keyCode === 39 && car.x < canvas.width - car.width) {
+                car.x += car.speed;
+            }
+        }
+
+        document.addEventListener('keydown', moveCar);
+        setInterval(createObstacle, 1000);
+
+        updateGame();
+    </script>
 </body>
 </html>
