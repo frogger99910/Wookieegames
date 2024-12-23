@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Page</title>
+    <title>Login Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,22 +35,30 @@
 </head>
 <body>
     <div class="container">
-        <h2>Enter Password</h2>
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="checkPassword()">Submit</button>
+        <button onclick="checkCredentials()">Submit</button>
         <p id="message"></p>
     </div>
 
     <script>
-        function checkPassword() {
+        function checkCredentials() {
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const message = document.getElementById('message');
-            const correctPassword = 'frog'; // Replace with your actual password
+            
+            // Usernames and corresponding passwords
+            const credentials = {
+                'user1': 'password1',
+                'user2': 'password2',
+                'user3': 'password3'
+            };
 
-            if (password === correctPassword) {
-                window.location.href = "hi.html"; // Redirect to hi.html
+            if (credentials[username] && credentials[username] === password) {
+                window.location.href = 'hi.html'; // Redirect to hi.html
             } else {
-                message.textContent = 'Incorrect password. Try again.';
+                message.textContent = 'Incorrect username or password. Try again.';
                 message.style.color = 'red';
             }
         }
