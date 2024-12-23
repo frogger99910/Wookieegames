@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <button class="button" onclick="window.location.href='game_page.html'">Portal</button>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Two Player Games</title>
@@ -11,6 +10,21 @@
             padding: 0;
             overflow: hidden;
         }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10; /* Ensure the button stays on top */
+            border-radius: 5px;
+        }
         iframe {
             position: absolute;
             top: 0;
@@ -19,22 +33,10 @@
             height: 100%;
             border: none;
         }
-       .button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 12px;
-            margin: 20px;
-            cursor: pointer;
-            border-radius: 12px;
-        }
     </style>
 </head>
 <body>
+    <button class="button" onclick="window.location.href='game_page.html'">Go to Game Page</button>
     <iframe src="https://www.twoplayergames.org/"></iframe>
 </body>
 </html>
