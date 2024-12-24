@@ -1,130 +1,48 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Ping Pong</title>
+    <title>Basic Voxel Game</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: black;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        canvas {
-            background-color: #000;
-        }
+        body { margin: 0; overflow: hidden; }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-        let paddleWidth = 10;
-        let paddleHeight = 100;
-        let playerY = canvas.height / 2 - paddleHeight / 2;
-        let computerY = canvas.height / 2 - paddleHeight / 2;
-        let ballX = canvas.width / 2;
-        let ballY = canvas.height / 2;
-        let ballSpeedX = 4;
-        let ballSpeedY = 4;
-        let playerScore = 0;
-        let computerScore = 0;
-        let ballRadius = 10;
+        const geometry = new THREE.BoxGeometry();
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        
+        const voxelSize = 1;
+        const worldSize = 10;
 
-        function drawRect(x, y, width, height, color) {
-            ctx.fillStyle = color;
-            ctx.fillRect(x, y, width, height);
-        }
-
-        function drawCircle(x, y, radius, color) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        function drawText(text, x, y, color) {
-            ctx.fillStyle = color;
-            ctx.fillText(text, x, y);
-        }
-
-        function resetBall() {
-            ballX = canvas.width / 2;
-            ballY = canvas.height / 2;
-            ballSpeedX = -ballSpeedX;
-            ballSpeedY = (Math.random() * 6) - 3; // Randomize ball's vertical speed
-        }
-
-        function draw() {
-            drawRect(0, 0, canvas.width, canvas.height, 'black');
-            drawRect(0, playerY, paddleWidth, paddleHeight, 'white');
-            drawRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight, 'white');
-            drawCircle(ballX, ballY, ballRadius, 'white');
-            drawText(playerScore, canvas.width / 4, canvas.height / 5, 'white');
-            drawText(computerScore, (canvas.width / 4) * 3, canvas.height / 5, 'white');
-        }
-
-        function move() {
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
-
-            if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
-                ballSpeedY = -ballSpeedY;
-            }
-
-            if (ballX + ballRadius > canvas.width) {
-                if (ballY > computerY && ballY < computerY + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
-                    let deltaY = ballY - (computerY + paddleHeight / 2);
-                    ballSpeedY = deltaY * 0.35;
-                } else {
-                    playerScore++;
-                    resetBall();
+        // Create a grid of cubes
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) {
+            for (let y = -worldSize / 2; y < worldSize / 2; y++) {
+                for (let z = -worldSize / 2; z < worldSize / 2; z++) {
+                    const cube = new THREE.Mesh(geometry, material);
+                    cube.position.set(x * voxelSize, y * voxelSize, z * voxelSize);
+                    scene.add(cube);
                 }
             }
-
-            if (ballX - ballRadius < 0) {
-                if (ballY > playerY && ballY < playerY + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
-                    let deltaY = ballY - (playerY + paddleHeight / 2);
-                    ballSpeedY = deltaY * 0.35;
-                } else {
-                    computerScore++;
-                    resetBall();
-                }
-            }
-
-            if (playerY < ballY - paddleHeight / 2) {
-                playerY += 6;
-            } else {
-                playerY -= 6;
-            }
-
-            computerY = ballY - paddleHeight / 2;
         }
 
-        canvas.addEventListener('mousemove', (event) => {
-            let rect = canvas.getBoundingClientRect();
-            let root = document.documentElement;
-            playerY = event.clientY - rect.top - root.scrollTop - paddleHeight / 2;
-        });
+        camera.position.z = 20;
 
-        function game() {
-            move();
-            draw();
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
         }
 
-        setInterval(game, 1000 / 60); // 60 frames per second
+        animate();
     </script>
 </body>
 </html>
