@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drive Mad</title>
+    <title>Retro Ping Pong</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #87CEEB;
+            background-color: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
         }
         canvas {
-            display: block;
-            margin: auto;
-            background-color: #808080;
+            background-color: #000;
         }
     </style>
 </head>
@@ -24,67 +28,103 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let car = {
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 100,
-            width: 50,
-            height: 100,
-            speed: 5,
-            dx: 0
-        };
+        let paddleWidth = 10;
+        let paddleHeight = 100;
+        let playerY = canvas.height / 2 - paddleHeight / 2;
+        let computerY = canvas.height / 2 - paddleHeight / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 4;
+        let ballSpeedY = 4;
+        let playerScore = 0;
+        let computerScore = 0;
+        let ballRadius = 10;
 
-        function drawCar() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(car.x, car.y, car.width, car.height);
+        function drawRect(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
         }
 
-        function clear() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function drawCircle(x, y, radius, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.fill();
         }
 
-        function update() {
-            clear();
-            drawCar();
+        function drawText(text, x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y);
+        }
 
-            car.x += car.dx;
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = -ballSpeedX;
+            ballSpeedY = (Math.random() * 6) - 3; // Randomize ball's vertical speed
+        }
 
-            if (car.x < 0) {
-                car.x = 0;
+        function draw() {
+            drawRect(0, 0, canvas.width, canvas.height, 'black');
+            drawRect(0, playerY, paddleWidth, paddleHeight, 'white');
+            drawRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight, 'white');
+            drawCircle(ballX, ballY, ballRadius, 'white');
+            drawText(playerScore, canvas.width / 4, canvas.height / 5, 'white');
+            drawText(computerScore, (canvas.width / 4) * 3, canvas.height / 5, 'white');
+        }
+
+        function move() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+                ballSpeedY = -ballSpeedY;
             }
-            if (car.x + car.width > canvas.width) {
-                car.x = canvas.width - car.width;
+
+            if (ballX + ballRadius > canvas.width) {
+                if (ballY > computerY && ballY < computerY + paddleHeight) {
+                    ballSpeedX = -ballSpeedX;
+                    let deltaY = ballY - (computerY + paddleHeight / 2);
+                    ballSpeedY = deltaY * 0.35;
+                } else {
+                    playerScore++;
+                    resetBall();
+                }
             }
 
-            requestAnimationFrame(update);
-        }
-
-        function moveRight() {
-            car.dx = car.speed;
-        }
-
-        function moveLeft() {
-            car.dx = -car.speed;
-        }
-
-        function stopCar() {
-            car.dx = 0;
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'd') {
-                moveRight();
-            } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-                moveLeft();
+            if (ballX - ballRadius < 0) {
+                if (ballY > playerY && ballY < playerY + paddleHeight) {
+                    ballSpeedX = -ballSpeedX;
+                    let deltaY = ballY - (playerY + paddleHeight / 2);
+                    ballSpeedY = deltaY * 0.35;
+                } else {
+                    computerScore++;
+                    resetBall();
+                }
             }
+
+            if (playerY < ballY - paddleHeight / 2) {
+                playerY += 6;
+            } else {
+                playerY -= 6;
+            }
+
+            computerY = ballY - paddleHeight / 2;
+        }
+
+        canvas.addEventListener('mousemove', (event) => {
+            let rect = canvas.getBoundingClientRect();
+            let root = document.documentElement;
+            playerY = event.clientY - rect.top - root.scrollTop - paddleHeight / 2;
         });
 
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'a') {
-                stopCar();
-            }
-        });
+        function game() {
+            move();
+            draw();
+        }
 
-        update();
+        setInterval(game, 1000 / 60); // 60 frames per second
     </script>
 </body>
 </html>
