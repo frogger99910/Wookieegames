@@ -69,3 +69,15 @@
             if (event.target.classList.contains('active')) {
                 score++;
                 document.getElementById('score').textContent = 'Score: ' + score;
+                activeMole.classList.remove('active');
+                activateMole();
+            }
+        }
+
+        moles.forEach(mole => mole.addEventListener('click', whackMole));
+
+        activateMole();
+        setInterval(activateMole, 500); // Moles will become active every 500 milliseconds
+    </script>
+</body>
+</html>
