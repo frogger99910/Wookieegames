@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <center>
-    <h1>Wookiee Games</h1>
-    </center>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title>Wookiee Games</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #f2f2f2;
+            margin: 0;
         }
         .container {
             background-color: #fff;
@@ -36,10 +35,15 @@
         }
         h1 {
             color: #A15912;
-            size: 100;
+            font-size: 100px;
+            margin: 0;
+            text-align: center;
+        }
     </style>
+    <link rel="icon" type="image/png" href="wookiee.png"> <!-- Link to the Wookiee icon image -->
 </head>
 <body>
+    <h1>Wookiee Games</h1>
     <div class="container">
         <h2>Login</h2>
         <input type="text" id="username" placeholder="Username">
@@ -59,7 +63,6 @@
                 'ben': 'frog',
                 'dndfan109': 'iheartdnd',
                 'user3': 'password3'
-                
             };
 
             if (credentials[username] && credentials[username] === password) {
