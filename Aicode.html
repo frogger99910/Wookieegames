@@ -3,118 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash</title>
+    <title>Drive Mad</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #87CEEB;
         }
         canvas {
-            border: 2px solid black;
+            display: block;
+            margin: auto;
+            background-color: #808080;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let player = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: 10, onGround: false };
-        let obstacles = [];
-        let score = 0;
-        let gameOver = false;
+        let car = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 100,
+            width: 50,
+            height: 100,
+            speed: 5,
+            dx: 0
+        };
 
-        function drawPlayer() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-        }
-
-        function drawObstacles() {
+        function drawCar() {
             ctx.fillStyle = 'red';
-            obstacles.forEach(obstacle => ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height));
+            ctx.fillRect(car.x, car.y, car.width, car.height);
         }
 
-        function createObstacle() {
-            const height = Math.random() * 50 + 50;
-            const y = canvas.height - height;
-            const obstacle = { x: canvas.width, y: y, width: 50, height: height, speed: 5 };
-            obstacles.push(obstacle);
+        function clear() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        function updateObstacles() {
-            obstacles.forEach(obstacle => obstacle.x -= obstacle.speed);
-            obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
-        }
+        function update() {
+            clear();
+            drawCar();
 
-        function drawScore() {
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
-            ctx.fillText('Score: ' + score, 10, 20);
-        }
+            car.x += car.dx;
 
-        function checkCollision() {
-            obstacles.forEach(obstacle => {
-                if (player.x < obstacle.x + obstacle.width && player.x + player.width > obstacle.x && player.y < obstacle.y + obstacle.height && player.y + player.height > obstacle.y) {
-                    gameOver = true;
-                }
-            });
-        }
-
-        function updatePlayer() {
-            player.dy += player.gravity;
-            player.y += player.dy;
-
-            if (player.y + player.height > canvas.height) {
-                player.y = canvas.height - player.height;
-                player.dy = 0;
-                player.onGround = true;
-            } else {
-                player.onGround = false;
+            if (car.x < 0) {
+                car.x = 0;
             }
+            if (car.x + car.width > canvas.width) {
+                car.x = canvas.width - car.width;
+            }
+
+            requestAnimationFrame(update);
         }
 
-        function jump() {
-            if (player.onGround) {
-                player.dy = -player.jumpPower;
-                player.onGround = false;
-            }
+        function moveRight() {
+            car.dx = car.speed;
+        }
+
+        function moveLeft() {
+            car.dx = -car.speed;
+        }
+
+        function stopCar() {
+            car.dx = 0;
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' || e.key === 'ArrowUp') {
-                jump();
+            if (e.key === 'ArrowRight' || e.key === 'd') {
+                moveRight();
+            } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+                moveLeft();
             }
         });
 
-        function gameLoop() {
-            if (gameOver) {
-                ctx.fillStyle = 'black';
-                ctx.font = '30px Arial';
-                ctx.fillText('Game Over! Score: ' + score, canvas.width / 4, canvas.height / 2);
-                return;
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'a') {
+                stopCar();
             }
+        });
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawObstacles();
-            drawScore();
-            updatePlayer();
-            updateObstacles();
-            checkCollision();
-
-            score++;
-            requestAnimationFrame(gameLoop);
-        }
-
-        setInterval(createObstacle, 2000);
-        gameLoop();
+        update();
     </script>
 </body>
 </html>
