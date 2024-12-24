@@ -15,14 +15,28 @@
             align-items: center;
             height: 100vh;
             font-family: 'Courier New', Courier, monospace;
+            flex-direction: column;
         }
         canvas {
             background-color: #000;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button class="button" onclick="restartGame()">Restart Game</button>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -31,13 +45,13 @@
         let paddleWidth = 10;
         let paddleHeight = 100;
         let playerY = canvas.height / 2 - paddleHeight / 2;
-        let computerY = canvas.height / 2 - paddleHeight / 2;
+        let player2Y = canvas.height / 2 - paddleHeight / 2;
         let ballX = canvas.width / 2;
         let ballY = canvas.height / 2;
         let ballSpeedX = 4;
         let ballSpeedY = 4;
         let playerScore = 0;
-        let computerScore = 0;
+        let player2Score = 0;
         let ballRadius = 10;
 
         function drawRect(x, y, width, height, color) {
@@ -68,10 +82,10 @@
         function draw() {
             drawRect(0, 0, canvas.width, canvas.height, 'black');
             drawRect(0, playerY, paddleWidth, paddleHeight, 'white');
-            drawRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight, 'white');
+            drawRect(canvas.width - paddleWidth, player2Y, paddleWidth, paddleHeight, 'white');
             drawCircle(ballX, ballY, ballRadius, 'white');
             drawText(playerScore, canvas.width / 4, canvas.height / 5, 'white');
-            drawText(computerScore, (canvas.width / 4) * 3, canvas.height / 5, 'white');
+            drawText(player2Score, (canvas.width / 4) * 3, canvas.height / 5, 'white');
         }
 
         function move() {
@@ -83,9 +97,9 @@
             }
 
             if (ballX + ballRadius > canvas.width) {
-                if (ballY > computerY && ballY < computerY + paddleHeight) {
+                if (ballY > player2Y && ballY < player2Y + paddleHeight) {
                     ballSpeedX = -ballSpeedX;
-                    let deltaY = ballY - (computerY + paddleHeight / 2);
+                    let deltaY = ballY - (player2Y + paddleHeight / 2);
                     ballSpeedY = deltaY * 0.35;
                 } else {
                     playerScore++;
@@ -99,25 +113,38 @@
                     let deltaY = ballY - (playerY + paddleHeight / 2);
                     ballSpeedY = deltaY * 0.35;
                 } else {
-                    computerScore++;
+                    player2Score++;
                     resetBall();
                 }
             }
-
-            if (playerY < ballY - paddleHeight / 2) {
-                playerY += 6;
-            } else {
-                playerY -= 6;
-            }
-
-            computerY = ballY - paddleHeight / 2;
         }
 
-        canvas.addEventListener('mousemove', (event) => {
-            let rect = canvas.getBoundingClientRect();
-            let root = document.documentElement;
-            playerY = event.clientY - rect.top - root.scrollTop - paddleHeight / 2;
-        });
+        function handlePlayer1Keys(e) {
+            const step = 20;
+            if (e.key === 'ArrowUp') {
+                playerY = Math.max(playerY - step, 0);
+            } else if (e.key === 'ArrowDown') {
+                playerY = Math.min(playerY + step, canvas.height - paddleHeight);
+            }
+        }
+
+        function handlePlayer2Keys(e) {
+            const step = 20;
+            if (e.key === 'w') {
+                player2Y = Math.max(player2Y - step, 0);
+            } else if (e.key === 's') {
+                player2Y = Math.min(player2Y + step, canvas.height - paddleHeight);
+            }
+        }
+
+        function restartGame() {
+            playerScore = 0;
+            player2Score = 0;
+            resetBall();
+        }
+
+        document.addEventListener('keydown', handlePlayer1Keys);
+        document.addEventListener('keydown', handlePlayer2Keys);
 
         function game() {
             move();
