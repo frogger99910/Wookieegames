@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-A-Mole</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+        }
+        .mole {
+            width: 100px;
+            height: 100px;
+            background-color: brown;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .mole.active {
+            background-color: green;
+        }
+        #score {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="game-container">
+            <div class="mole" id="mole1"></div>
+            <div class="mole" id="mole2"></div>
+            <div class="mole" id="mole3"></div>
+            <div class="mole" id="mole4"></div>
+            <div class="mole" id="mole5"></div>
+            <div class="mole" id="mole6"></div>
+            <div class="mole" id="mole7"></div>
+            <div class="mole" id="mole8"></div>
+            <div class="mole" id="mole9"></div>
+        </div>
+        <div id="score">Score: 0</div>
+    </div>
+
+    <script>
+        const moles = document.querySelectorAll('.mole');
+        let score = 0;
+        let activeMole = null;
+
+        function activateMole() {
+            if (activeMole) {
+                activeMole.classList.remove('active');
+            }
+            const index = Math.floor(Math.random() * moles.length);
+            activeMole = moles[index];
+            activeMole.classList.add('active');
+        }
+
+        function whackMole(event) {
+            if (event.target.classList.contains('active')) {
+                score++;
+                document.getElementById('score').textContent = 'Score: ' + score;
