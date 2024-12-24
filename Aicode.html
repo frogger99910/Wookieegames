@@ -62,7 +62,22 @@
                 { x: 200, y: 300, width: 150, height: 20, color: 'green' },
                 { x: 500, y: 250, width: 150, height: 20, color: 'green' }
             ],
-            // Add more levels as needed
+            [
+                { x: 0, y: 350, width: 800, height: 50, color: 'green' },
+                { x: 150, y: 300, width: 100, height: 20, color: 'green' },
+                { x: 350, y: 250, width: 100, height: 20, color: 'green' },
+                { x: 550, y: 200, width: 100, height: 20, color: 'green' },
+                { x: 200, y: 150, width: 100, height: 20, color: 'green' },
+                { x: 400, y: 100, width: 100, height: 20, color: 'green' }
+            ],
+            [
+                { x: 0, y: 350, width: 800, height: 50, color: 'green' },
+                { x: 100, y: 300, width: 100, height: 20, color: 'green' },
+                { x: 250, y: 250, width: 100, height: 20, color: 'green' },
+                { x: 400, y: 200, width: 100, height: 20, color: 'green' },
+                { x: 550, y: 150, width: 100, height: 20, color: 'green' },
+                { x: 650, y: 100, width: 100, height: 20, color: 'green' }
+            ]
         ];
 
         let player = {
@@ -92,10 +107,18 @@
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
+        function drawSword(enemy) {
+            ctx.fillStyle = 'silver';
+            ctx.fillRect(enemy.x + enemy.width / 2 - 2, enemy.y - 10, 4, 10); // Sword handle
+            ctx.fillStyle = 'black';
+            ctx.fillRect(enemy.x + enemy.width / 2 - 1, enemy.y - 20, 2, 10); // Sword blade
+        }
+
         function drawEnemies() {
             enemies.forEach(enemy => {
                 ctx.fillStyle = enemy.color;
                 ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                drawSword(enemy);
             });
         }
 
@@ -200,58 +223,4 @@
         function attackEnemies() {
             enemies = enemies.filter(enemy => {
                 const isInRange = (
-                    player.x + player.width + player.attackRange > enemy.x &&
-                    player.x < enemy.x + enemy.width &&
-                    player.y + player.height > enemy.y &&
-                    player.y < enemy.y + enemy.height
-                );
-                return !isInRange;
-            });
-
-            if (enemies.length === 0) {
-                nextLevel();
-            }
-        }
-
-        document.addEventListener('keydown', movePlayer);
-        document.addEventListener('keyup', stopPlayer);
-
-        function nextLevel() {
-            currentLevel++;
-            if (currentLevel >= levels.length) {
-                alert('You completed all levels!');
-                currentLevel = 0;
-            }
-            player.x = 50;
-            player.y = 300;
-            player.health = 3;
-            // Reset enemies for the new level
-            enemies = [
-                { x: 400, y: 300, width: 50, height: 50, color: 'red', dx: -1, attackRange: 20, attackPower: 1 }
-            ];
-        }
-
-        function restartGame() {
-            currentLevel = 0;
-            player.x = 50;
-            player.y = 300;
-            player.health = 3;
-            enemies = [
-                { x: 400, y: 300, width: 50, height: 50, color: 'red', dx: -1, attackRange: 20, attackPower: 1 }
-            ];
-        }
-
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawEnemies();
-            drawPlatforms();
-            updatePlayer();
-            updateEnemies();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>
+                    player.x +
