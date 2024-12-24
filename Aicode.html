@@ -34,34 +34,21 @@
                 { x: 0, y: 350, width: 800, height: 50, color: 'green' },
                 { x: 150, y: 300, width: 100, height: 20, color: 'green' },
                 { x: 350, y: 250, width: 100, height: 20, color: 'green' },
-                { x: 550, y: 200, width: 100, height: 20, color: 'green' },
-                { enemies: [{ x: 400, y: 300, width: 50, height: 50, color: 'red', speed: 1, attackRange: 20 }] }
+                { x: 550, y: 200, width: 100, height: 20, color: 'green' }
             ],
             [
                 { x: 0, y: 350, width: 800, height: 50, color: 'green' },
                 { x: 100, y: 300, width: 100, height: 20, color: 'green' },
                 { x: 250, y: 250, width: 100, height: 20, color: 'green' },
                 { x: 400, y: 200, width: 100, height: 20, color: 'green' },
-                { x: 550, y: 150, width: 100, height: 20, color: 'green' },
-                { enemies: [{ x: 350, y: 300, width: 50, height: 50, color: 'red', speed: 1, attackRange: 20 }] }
+                { x: 550, y: 150, width: 100, height: 20, color: 'green' }
             ],
             [
                 { x: 0, y: 350, width: 800, height: 50, color: 'green' },
-                { x: 150, y: 300, width: 100, height: 20, color: 'green' },
-                { x: 300, y: 250, width: 100, height: 20, color: 'green' },
-                { x: 450, y: 200, width: 100, height: 20, color: 'green' },
-                { x: 600, y: 150, width: 100, height: 20, color: 'green' },
-                { enemies: [{ x: 500, y: 300, width: 50, height: 50, color: 'red', speed: 1, attackRange: 20 }] }
+                { x: 200, y: 300, width: 150, height: 20, color: 'green' },
+                { x: 500, y: 250, width: 150, height: 20, color: 'green' }
             ],
-            [
-                { x: 0, y: 350, width: 800, height: 50, color: 'green' },
-                { x: 150, y: 300, width: 100, height: 20, color: 'green' },
-                { x: 350, y: 250, width: 100, height: 20, color: 'green' },
-                { x: 550, y: 200, width: 100, height: 20, color: 'green' },
-                { x: 750, y: 150, width: 100, height: 20, color: 'green' },
-                { enemies: [{ x: 400, y: 300, width: 50, height: 50, color: 'red', speed: 1, attackRange: 20 }] }
-            ],
-            // Add more levels as needed up to 10
+            // Add more levels as needed
         ];
 
         let player = {
@@ -78,8 +65,13 @@
             doubleJump: false,
             onGround: false,
             wallJumping: false,
-            attackRange: 20
+            attackRange: 20,
+            health: 3
         };
+
+        let enemies = [
+            { x: 400, y: 300, width: 50, height: 50, color: 'red', dx: -1, attackRange: 20, attackPower: 1 }
+        ];
 
         function drawPlayer() {
             ctx.fillStyle = player.color;
@@ -87,7 +79,7 @@
         }
 
         function drawEnemies() {
-            levels[currentLevel].enemies.forEach(enemy => {
+            enemies.forEach(enemy => {
                 ctx.fillStyle = enemy.color;
                 ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             });
@@ -95,10 +87,8 @@
 
         function drawPlatforms() {
             levels[currentLevel].forEach(platform => {
-                if (platform.color) {
-                    ctx.fillStyle = platform.color;
-                    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-                }
+                ctx.fillStyle = platform.color;
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             });
         }
 
@@ -110,18 +100,16 @@
             let onGround = false;
             let wallJumping = false;
             levels[currentLevel].forEach(platform => {
-                if (platform.color) {
-                    if (player.y + player.height > platform.y && player.y + player.height < platform.y + platform.height && player.x + player.width > platform.x && player.x < platform.x + platform.width) {
-                        player.y = platform.y - player.height;
-                        player.dy = 0;
-                        onGround = true;
-                        player.doubleJump = false;
-                    }
+                if (player.y + player.height > platform.y && player.y + player.height < platform.y + platform.height && player.x + player.width > platform.x && player.x < platform.x + platform.width) {
+                    player.y = platform.y - player.height;
+                    player.dy = 0;
+                    onGround = true;
+                    player.doubleJump = false;
+                }
 
-                    if (player.x + player.width > platform.x && player.x < platform.x + platform.width && player.y + player.height > platform.y && player.y < platform.y + platform.height) {
-                        player.dx = 0;
-                        wallJumping = true;
-                    }
+                if (player.x + player.width > platform.x && player.x < platform.x + platform.width && player.y + player.height > platform.y && player.y < platform.y + platform.height) {
+                    player.dx = 0;
+                    wallJumping = true;
                 }
             });
 
@@ -141,6 +129,31 @@
             if (player.x + player.width > canvas.width) {
                 player.x = canvas.width - player.width;
             }
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                enemy.x += enemy.dx;
+
+                if (enemy.x < 0 || enemy.x + enemy.width > canvas.width) {
+                    enemy.dx = -enemy.dx;
+                }
+
+                const isInRange = (
+                    enemy.x + enemy.width + enemy.attackRange > player.x &&
+                    enemy.x < player.x + player.width &&
+                    enemy.y + enemy.height > player.y &&
+                    enemy.y < player.y + player.height
+                );
+
+                if (isInRange) {
+                    player.health -= enemy.attackPower;
+                    if (player.health <= 0) {
+                        alert('Game Over!');
+                        document.location.reload();
+                    }
+                }
+            });
         }
 
         function movePlayer(e) {
@@ -171,7 +184,7 @@
         }
 
         function attackEnemies() {
-            levels[currentLevel].enemies = levels[currentLevel].enemies.filter(enemy => {
+            enemies = enemies.filter(enemy => {
                 const isInRange = (
                     player.x + player.width + player.attackRange > enemy.x &&
                     player.x < enemy.x + enemy.width &&
@@ -180,43 +193,45 @@
                 );
                 return !isInRange;
             });
+
+            if (enemies.length === 0) {
+                nextLevel();
+            }
         }
 
-        function moveEnemies() {
-            levels[currentLevel].enemies.forEach(enemy => {
-                enemy.x += enemy.speed;
-                if (enemy.x + enemy.width > canvas.width || enemy.x < 0) {
-                    enemy.speed = -enemy.speed;
-                }
-            });
-        }
-
-        function checkPlayerCollisionWithEnemies() {
-            levels[currentLevel].enemies.forEach(enemy => {
-                const isColliding = (
-                    player.x < enemy.x + enemy.width &&
-                    player.x + player.width > enemy.x &&
-                    player.y < enemy.y + enemy.height &&
-                    player.y + player.height > enemy.y
-                );
-                if (isColliding) {
-                    alert('Game Over!');
-                    player.x = 50;
-                    player.y = 300;
-                    currentLevel = 0;
-                    playerScore = 0;
-                }
-            });
-        }
+        document.addEventListener('keydown', movePlayer);
+        document.addEventListener('keyup', stopPlayer);
 
         function nextLevel() {
-            if (levels[currentLevel].enemies.length === 0) {
-                currentLevel++;
-                if (currentLevel >= levels.length) {
-                    alert('You completed all levels!');
-                    currentLevel = 0;
-                }
-                player.x = 50;
-                player.y = 300;
-                // Reset enemies for the new level
-                levels[currentLevel].
+            currentLevel++;
+            if (currentLevel >= levels.length) {
+                alert('You completed all levels!');
+                currentLevel = 0;
+            }
+            player.x = 50;
+            player.y = 300;
+            // Reset enemies for the new level
+            enemies = [
+                { x: 400, y: 300, width: 50, height: 50, color: 'red', dx: -1, attackRange: 20, attackPower: 1 }
+            ];
+        }
+
+        function checkLevelCompletion() {
+            // Level completion logic is now handled in the attackEnemies function
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawEnemies();
+            drawPlatforms();
+            updatePlayer();
+            updateEnemies();
+            checkLevelCompletion();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
