@@ -60,7 +60,8 @@
             jumpPower: 12,
             doubleJump: false,
             onGround: false,
-            wallJumping: false
+            wallJumping: false,
+            attackRange: 20
         };
 
         let enemies = [
@@ -75,113 +76,3 @@
         function drawEnemies() {
             enemies.forEach(enemy => {
                 ctx.fillStyle = enemy.color;
-                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-            });
-        }
-
-        function drawPlatforms() {
-            levels[currentLevel].forEach(platform => {
-                ctx.fillStyle = platform.color;
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            });
-        }
-
-        function updatePlayer() {
-            player.x += player.dx;
-            player.y += player.dy;
-            player.dy += player.gravity;
-
-            let onGround = false;
-            let wallJumping = false;
-            levels[currentLevel].forEach(platform => {
-                if (player.y + player.height > platform.y && player.y + player.height < platform.y + platform.height && player.x + player.width > platform.x && player.x < platform.x + platform.width) {
-                    player.y = platform.y - player.height;
-                    player.dy = 0;
-                    onGround = true;
-                    player.doubleJump = false;
-                }
-
-                if (player.x + player.width > platform.x && player.x < platform.x + platform.width && player.y + player.height > platform.y && player.y < platform.y + platform.height) {
-                    player.dx = 0;
-                    wallJumping = true;
-                }
-            });
-
-            player.onGround = onGround;
-            player.wallJumping = wallJumping;
-
-            if (player.y + player.height > canvas.height) {
-                player.y = canvas.height - player.height;
-                player.dy = 0;
-                player.onGround = true;
-                player.doubleJump = false;
-            }
-
-            if (player.x < 0) {
-                player.x = 0;
-            }
-            if (player.x + player.width > canvas.width) {
-                player.x = canvas.width - player.width;
-            }
-        }
-
-        function movePlayer(e) {
-            if (e.key === 'ArrowLeft') {
-                player.dx = -player.speed;
-            } else if (e.key === 'ArrowRight') {
-                player.dx = player.speed;
-            } else if (e.key === 'ArrowUp') {
-                if (player.onGround) {
-                    player.dy = -player.jumpPower;
-                    player.onGround = false;
-                } else if (!player.doubleJump) {
-                    player.dy = -player.jumpPower;
-                    player.doubleJump = true;
-                } else if (player.wallJumping) {
-                    player.dy = -player.jumpPower;
-                    player.wallJumping = false;
-                }
-            } else if (e.key === ' ') {
-                // Attack logic
-            }
-        }
-
-        function stopPlayer(e) {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                player.dx = 0;
-            }
-        }
-
-        document.addEventListener('keydown', movePlayer);
-        document.addEventListener('keyup', stopPlayer);
-
-        function nextLevel() {
-            currentLevel++;
-            if (currentLevel >= levels.length) {
-                alert('You completed all levels!');
-                currentLevel = 0;
-            }
-            player.x = 50;
-            player.y = 300;
-        }
-
-        function checkLevelCompletion() {
-            if (player.x > canvas.width - player.width) {
-                nextLevel();
-            }
-        }
-
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawEnemies();
-            drawPlatforms();
-            updatePlayer();
-            checkLevelCompletion();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>
