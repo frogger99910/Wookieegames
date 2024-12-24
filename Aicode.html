@@ -3,81 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhackA-Mole</title>
+    <title>Geometry Dash</title>
     <style>
         body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
         }
-        .game-container {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 10px;
-        }
-        .mole {
-            width: 100px;
-            height: 100px;
-            background-color: brown;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .mole.active {
-            background-color: green;
-        }
-        #score {
-            margin-top: 20px;
-            font-size: 24px;
+        canvas {
+            border: 2px solid black;
         }
     </style>
 </head>
 <body>
-    <div>
-        <div class="game-container">
-            <div class="mole" id="mole1"></div>
-            <div class="mole" id="mole2"></div>
-            <div class="mole" id="mole3"></div>
-            <div class="mole" id="mole4"></div>
-            <div class="mole" id="mole5"></div>
-            <div class="mole" id="mole6"></div>
-            <div class="mole" id="mole7"></div>
-            <div class="mole" id="mole8"></div>
-            <div class="mole" id="mole9"></div>
-        </div>
-        <div id="score">Score: 0</div>
-    </div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
 
     <script>
-        const moles = document.querySelectorAll('.mole');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: 10, onGround: false };
+        let obstacles = [];
         let score = 0;
-        let activeMole = null;
+        let gameOver = false;
 
-        function activateMole() {
-            if (activeMole) {
-                activeMole.classList.remove('active');
-            }
-            const index = Math.floor(Math.random() * moles.length);
-            activeMole = moles[index];
-            activeMole.classList.add('active');
+        function drawPlayer() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
-        function whackMole(event) {
-            if (event.target.classList.contains('active')) {
-                score++;
-                document.getElementById('score').textContent = 'Score: ' + score;
-                activeMole.classList.remove('active');
-                activateMole();
+        function drawObstacles() {
+            ctx.fillStyle = 'red';
+            obstacles.forEach(obstacle => ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height));
+        }
+
+        function createObstacle() {
+            const height = Math.random() * 50 + 50;
+            const y = canvas.height - height;
+            const obstacle = { x: canvas.width, y: y, width: 50, height: height, speed: 5 };
+            obstacles.push(obstacle);
+        }
+
+        function updateObstacles() {
+            obstacles.forEach(obstacle => obstacle.x -= obstacle.speed);
+            obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+        }
+
+        function drawScore() {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Score: ' + score, 10, 20);
+        }
+
+        function checkCollision() {
+            obstacles.forEach(obstacle => {
+                if (player.x < obstacle.x + obstacle.width && player.x + player.width > obstacle.x && player.y < obstacle.y + obstacle.height && player.y + player.height > obstacle.y) {
+                    gameOver = true;
+                }
+            });
+        }
+
+        function updatePlayer() {
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                player.dy = 0;
+                player.onGround = true;
+            } else {
+                player.onGround = false;
             }
         }
 
-        moles.forEach(mole => mole.addEventListener('click', whackMole));
+        function jump() {
+            if (player.onGround) {
+                player.dy = -player.jumpPower;
+                player.onGround = false;
+            }
+        }
 
-        activateMole();
-        setInterval(activateMole, 500); // Moles will become active every 500 milliseconds
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'ArrowUp') {
+                jump();
+            }
+        });
+
+        function gameLoop() {
+            if (gameOver) {
+                ctx.fillStyle = 'black';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over! Score: ' + score, canvas.width / 4, canvas.height / 2);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawObstacles();
+            drawScore();
+            updatePlayer();
+            updateObstacles();
+            checkCollision();
+
+            score++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        setInterval(createObstacle, 2000);
+        gameLoop();
     </script>
 </body>
 </html>
