@@ -223,4 +223,57 @@
         function attackEnemies() {
             enemies = enemies.filter(enemy => {
                 const isInRange = (
-                    player.x +
+                    player.x + player.attackRange > enemy.x &&
+                    player.x < enemy.x + enemy.width &&
+                    player.y + player.attackRange > enemy.y &&
+                    player.y < enemy.y + enemy.height
+                );
+
+                return !isInRange;
+            });
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlatforms();
+            drawPlayer();
+            drawEnemies();
+            updatePlayer();
+            updateEnemies();
+            requestAnimationFrame(update);
+        }
+
+        function restartGame() {
+            player = {
+                x: 50,
+                y: 300,
+                width: 50,
+                height: 50,
+                color: 'blue',
+                speed: 5,
+                dx: 0,
+                dy: 0,
+                gravity: 0.5,
+                jumpPower: 12,
+                doubleJump: false,
+                onGround: false,
+                wallJumping: false,
+                attackRange: 20,
+                health: 3
+            };
+
+            enemies = [
+                { x: 400, y: 300, width: 50, height: 50, color: 'red', dx: -1, attackRange: 20, attackPower: 1 }
+            ];
+
+            currentLevel = 0;
+            update();
+        }
+
+        document.addEventListener('keydown', movePlayer);
+        document.addEventListener('keyup', stopPlayer);
+
+        update();
+    </script>
+</body>
+</html>
