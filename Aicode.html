@@ -60,14 +60,16 @@
             dy: 0,
             gravity: 0.5,
             jumpForce: -10,
-            jumps: 0,
-            maxJumps: 2,
+            isJumping: false,
+            onGround: true,
             color: 'red',
             linesColor: 'black',
             attacking: false,
             attackDuration: 10,
             attackFrame: 0,
-            health: 100
+            health: 100,
+            jumpCount: 0,
+            maxJumps: 2
         };
 
         const enemy = {
@@ -106,4 +108,118 @@
             if (character.attacking && character.attackFrame < character.attackDuration) {
                 const swordX = character.x + (character.width / 2) * (character === ninja ? 1 : -1);
                 ctx.fillStyle = 'gray';
-                ctx.fillRect(swordX, character.y + character.height
+                ctx.fillRect(swordX, character.y + character.height / 4, 30, 5);
+                character.attackFrame++;
+            } else {
+                character.attacking = false;
+                character.attackFrame = 0;
+            }
+        }
+
+        function drawPlatforms() {
+            ctx.fillStyle = '#654321';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+        }
+
+        function showLoseScreen() {
+            document.getElementById('loseScreen').classList.add('visible');
+            gameOver = true;
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawCharacter(ninja);
+            drawCharacter(enemy);
+            drawSword(ninja);
+            drawSword(enemy);
+            drawPlatforms();
+
+            // Ninja movement
+            if (keys['ArrowLeft'] && ninja.x > 0) {
+                ninja.x -= ninja.dx;
+            }
+            if (keys['ArrowRight'] && ninja.x + ninja.width < canvas.width) {
+                ninja.x += ninja.dx;
+            }
+
+            // Ninja jumping
+            if (ninja.isJumping) {
+                ninja.dy += ninja.gravity;
+                ninja.y += ninja.dy;
+
+                platforms.forEach(platform => {
+                    if (ninja.y + ninja.height >= platform.y &&
+                        ninja.y + ninja.height - ninja.dy <= platform.y &&
+                        ninja.x + ninja.width >= platform.x &&
+                        ninja.x <= platform.x + platform.width) {
+                        ninja.y = platform.y - ninja.height;
+                        ninja.isJumping = false;
+                        ninja.dy = 0;
+                        ninja.onGround = true;
+                        ninja.jumpCount = 0;
+                    }
+                });
+
+                if (ninja.y + ninja.height >= canvas.height) {
+                    ninja.y = canvas.height - ninja.height;
+                    ninja.isJumping = false;
+                    ninja.dy = 0;
+                    ninja.onGround = true;
+                    ninja.jumpCount = 0;
+                }
+            }
+
+            // Enemy movement and attack
+            if (ninja.x < enemy.x) {
+                enemy.x -= enemy.dx;
+            } else {
+                enemy.x += enemy.dx;
+            }
+            if (Math.abs(ninja.x - enemy.x) < 100) {
+                enemy.attacking = true;
+            } else {
+                enemy.attacking = false;
+            }
+
+            // Sword collision detection
+            if (enemy.attacking && enemy.x - 30 <= ninja.x + ninja.width && enemy.x >= ninja.x && enemy.y <= ninja.y + ninja.height && enemy.y + enemy.height >= ninja.y) {
+                ninja.health -= 10;
+                if (ninja.health <= 0) {
+                    showLoseScreen();
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === 'ArrowUp' && ninja.jumpCount < ninja.maxJumps) {
+                ninja.dy = ninja.jumpForce;
+                ninja.isJumping = true;
+                ninja.onGround = false;
+                ninja.jumpCount++;
+            }
+            if (e.key === ' ' && !ninja.attacking) {
+                ninja.attacking = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            location.reload();
+        });
+
+        update();
+    </script>
+</body>
+</html>
