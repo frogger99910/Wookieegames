@@ -23,11 +23,30 @@
             font-size: 16px;
             cursor: pointer;
         }
+        .overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .visible {
+            display: flex;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <button id="restartButton">Restart</button>
+    <div id="loseScreen" class="overlay">
+        <h1>You Lose</h1>
+        <button id="restartButton">Restart</button>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -45,7 +64,8 @@
             onGround: true,
             color: 'red',
             linesColor: 'black',
-            attacking: false
+            attacking: false,
+            health: 100
         };
 
         const enemy = {
@@ -58,6 +78,8 @@
             linesColor: 'red',
             attacking: false
         };
+
+        let gameOver = false;
 
         function drawCharacter(character) {
             ctx.fillStyle = character.color;
@@ -80,7 +102,14 @@
             }
         }
 
+        function showLoseScreen() {
+            document.getElementById('loseScreen').classList.add('visible');
+            gameOver = true;
+        }
+
         function update() {
+            if (gameOver) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             drawCharacter(ninja);
@@ -121,13 +150,11 @@
             }
 
             // Sword collision detection
-            if (ninja.attacking && ninja.x + ninja.width + 30 >= enemy.x && ninja.x <= enemy.x + enemy.width && ninja.y <= enemy.y + enemy.height && ninja.y + ninja.height >= enemy.y) {
-                // Remove alert message
-                ninja.attacking = false;
-            }
             if (enemy.attacking && enemy.x - 30 <= ninja.x + ninja.width && enemy.x >= ninja.x && enemy.y <= ninja.y + ninja.height && enemy.y + enemy.height >= ninja.y) {
-                // Remove alert message
-                enemy.attacking = false;
+                ninja.health -= 10;
+                if (ninja.health <= 0) {
+                    showLoseScreen();
+                }
             }
 
             requestAnimationFrame(update);
@@ -141,7 +168,7 @@
                 ninja.isJumping = true;
                 ninja.onGround = false;
             }
-            if (e.key === ' ' && !ninja.onGround) {
+            if (e.key === ' ') {
                 ninja.attacking = true;
             }
         });
