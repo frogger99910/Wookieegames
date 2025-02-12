@@ -26,9 +26,9 @@
 
         const ninja = {
             width: 50,
-            height: 50,
+            height: 100,
             x: canvas.width / 2 - 25,
-            y: canvas.height - 50,
+            y: canvas.height - 100,
             dx: 5,
             dy: 0,
             gravity: 0.5,
@@ -42,11 +42,13 @@
 
         const enemy = {
             width: 50,
-            height: 50,
+            height: 100,
             x: 100,
-            y: canvas.height - 50,
+            y: canvas.height - 100,
+            dx: 3,
             color: 'black',
-            linesColor: 'red'
+            linesColor: 'red',
+            attacking: false
         };
 
         function drawCharacter(character) {
@@ -62,9 +64,12 @@
             ctx.stroke();
         }
 
-        function drawSword() {
-            ctx.fillStyle = 'gray';
-            ctx.fillRect(ninja.x + ninja.width, ninja.y + ninja.height / 4, 30, 5);
+        function drawSword(character) {
+            if (character.attacking) {
+                const swordX = character.x + (character.width / 2) * (character === ninja ? 1 : -1);
+                ctx.fillStyle = 'gray';
+                ctx.fillRect(swordX, character.y + character.height / 4, 30, 5);
+            }
         }
 
         function update() {
@@ -72,16 +77,10 @@
 
             drawCharacter(ninja);
             drawCharacter(enemy);
+            drawSword(ninja);
+            drawSword(enemy);
 
-            if (ninja.attacking) {
-                drawSword();
-                if (ninja.x + ninja.width + 30 >= enemy.x && ninja.x <= enemy.x + enemy.width && ninja.y <= enemy.y + enemy.height && ninja.y + ninja.height >= enemy.y) {
-                    alert('You hit the enemy!');
-                    ninja.attacking = false;
-                }
-            }
-
-            // Handle horizontal movement
+            // Ninja movement
             if (keys['ArrowLeft'] && ninja.x > 0) {
                 ninja.x -= ninja.dx;
             }
@@ -89,7 +88,7 @@
                 ninja.x += ninja.dx;
             }
 
-            // Handle jumping
+            // Ninja jumping
             if (ninja.isJumping) {
                 ninja.dy += ninja.gravity;
                 ninja.y += ninja.dy;
@@ -99,6 +98,28 @@
                     ninja.dy = 0;
                     ninja.onGround = true;
                 }
+            }
+
+            // Enemy movement and attack
+            if (ninja.x < enemy.x) {
+                enemy.x -= enemy.dx;
+            } else {
+                enemy.x += enemy.dx;
+            }
+            if (Math.abs(ninja.x - enemy.x) < 100) {
+                enemy.attacking = true;
+            } else {
+                enemy.attacking = false;
+            }
+
+            // Sword collision detection
+            if (ninja.attacking && ninja.x + ninja.width + 30 >= enemy.x && ninja.x <= enemy.x + enemy.width && ninja.y <= enemy.y + enemy.height && ninja.y + ninja.height >= enemy.y) {
+                alert('Ninja hit the enemy!');
+                ninja.attacking = false;
+            }
+            if (enemy.attacking && enemy.x - 30 <= ninja.x + ninja.width && enemy.x >= ninja.x && enemy.y <= ninja.y + ninja.height && enemy.y + enemy.height >= ninja.y) {
+                alert('Enemy hit the ninja!');
+                enemy.attacking = false;
             }
 
             requestAnimationFrame(update);
