@@ -65,6 +65,8 @@
             color: 'red',
             linesColor: 'black',
             attacking: false,
+            attackDuration: 10,
+            attackFrame: 0,
             health: 100
         };
 
@@ -78,6 +80,12 @@
             linesColor: 'red',
             attacking: false
         };
+
+        const platforms = [
+            { x: 100, y: 500, width: 200, height: 20 },
+            { x: 400, y: 400, width: 200, height: 20 },
+            { x: 200, y: 300, width: 200, height: 20 }
+        ];
 
         let gameOver = false;
 
@@ -95,11 +103,22 @@
         }
 
         function drawSword(character) {
-            if (character.attacking) {
+            if (character.attacking && character.attackFrame < character.attackDuration) {
                 const swordX = character.x + (character.width / 2) * (character === ninja ? 1 : -1);
                 ctx.fillStyle = 'gray';
                 ctx.fillRect(swordX, character.y + character.height / 4, 30, 5);
+                character.attackFrame++;
+            } else {
+                character.attacking = false;
+                character.attackFrame = 0;
             }
+        }
+
+        function drawPlatforms() {
+            ctx.fillStyle = '#654321';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
         }
 
         function showLoseScreen() {
@@ -116,6 +135,7 @@
             drawCharacter(enemy);
             drawSword(ninja);
             drawSword(enemy);
+            drawPlatforms();
 
             // Ninja movement
             if (keys['ArrowLeft'] && ninja.x > 0) {
@@ -129,6 +149,19 @@
             if (ninja.isJumping) {
                 ninja.dy += ninja.gravity;
                 ninja.y += ninja.dy;
+
+                platforms.forEach(platform => {
+                    if (ninja.y + ninja.height >= platform.y &&
+                        ninja.y + ninja.height - ninja.dy <= platform.y &&
+                        ninja.x + ninja.width >= platform.x &&
+                        ninja.x <= platform.x + platform.width) {
+                        ninja.y = platform.y - ninja.height;
+                        ninja.isJumping = false;
+                        ninja.dy = 0;
+                        ninja.onGround = true;
+                    }
+                });
+
                 if (ninja.y + ninja.height >= canvas.height) {
                     ninja.y = canvas.height - ninja.height;
                     ninja.isJumping = false;
@@ -168,16 +201,13 @@
                 ninja.isJumping = true;
                 ninja.onGround = false;
             }
-            if (e.key === ' ') {
+            if (e.key === ' ' && !ninja.attacking) {
                 ninja.attacking = true;
             }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.key] = false;
-            if (e.key === ' ') {
-                ninja.attacking = false;
-            }
         });
 
         document.getElementById('restartButton').addEventListener('click', () => {
