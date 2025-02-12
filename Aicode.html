@@ -12,23 +12,31 @@
             align-items: center;
             height: 100vh;
             background-color: #f0f0f0;
+            flex-direction: column;
         }
         canvas {
             background-color: #87CEEB;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="restartButton">Restart</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         const ninja = {
-            width: 50,
-            height: 100,
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 100,
+            width: 40,
+            height: 80,
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 80,
             dx: 5,
             dy: 0,
             gravity: 0.5,
@@ -41,10 +49,10 @@
         };
 
         const enemy = {
-            width: 50,
-            height: 100,
+            width: 40,
+            height: 80,
             x: 100,
-            y: canvas.height - 100,
+            y: canvas.height - 80,
             dx: 3,
             color: 'black',
             linesColor: 'red',
@@ -114,11 +122,11 @@
 
             // Sword collision detection
             if (ninja.attacking && ninja.x + ninja.width + 30 >= enemy.x && ninja.x <= enemy.x + enemy.width && ninja.y <= enemy.y + enemy.height && ninja.y + ninja.height >= enemy.y) {
-                alert('Ninja hit the enemy!');
+                // Remove alert message
                 ninja.attacking = false;
             }
             if (enemy.attacking && enemy.x - 30 <= ninja.x + ninja.width && enemy.x >= ninja.x && enemy.y <= ninja.y + ninja.height && enemy.y + enemy.height >= ninja.y) {
-                alert('Enemy hit the ninja!');
+                // Remove alert message
                 enemy.attacking = false;
             }
 
@@ -128,7 +136,7 @@
         const keys = {};
         window.addEventListener('keydown', (e) => {
             keys[e.key] = true;
-            if (e.key === ' ' && ninja.onGround) {
+            if (e.key === 'ArrowUp' && ninja.onGround) {
                 ninja.dy = ninja.jumpForce;
                 ninja.isJumping = true;
                 ninja.onGround = false;
@@ -143,6 +151,10 @@
             if (e.key === ' ') {
                 ninja.attacking = false;
             }
+        });
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            location.reload();
         });
 
         update();
