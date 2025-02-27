@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple AI Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f9;
+            height: 100vh;
+            margin: 0;
+        }
+        .chatbox {
+            width: 90%;
+            max-width: 400px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .messages p {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .user {
+            background-color: #d1f4ff;
+            text-align: right;
+        }
+        .bot {
+            background-color: #f4d1ff;
+        }
+        .input-area {
+            display: flex;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .input-area button {
+            padding: 10px;
+            margin-left: 5px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbox">
+        <div class="messages" id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById("messages");
+
+        function sendMessage() {
+            const userInput = document.getElementById("userInput");
+            const userMessage = userInput.value.trim();
+
+            if (userMessage) {
+                addMessage(userMessage, "user");
+                userInput.value = "";
+
+                // Simulated bot response
+                setTimeout(() => {
+                    const botMessage = getBotResponse(userMessage);
+                    addMessage(botMessage, "bot");
+                }, 500);
+            }
+        }
+
+        function addMessage(message, sender) {
+            const p = document.createElement("p");
+            p.textContent = message;
+            p.className = sender;
+            messages.appendChild(p);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function getBotResponse(input) {
+            const responses = {
+                hello: "Hi there! How can I help you?",
+                how: "I'm just a simple AI, but I'm here to help!",
+                bye: "Goodbye! Have a great day!"
+            };
+            for (let key in responses) {
+                if (input.toLowerCase().includes(key)) {
+                    return responses[key];
+                }
+            }
+            return "Sorry, I didn't understand that.";
+        }
+    </script>
+</body>
+</html>
