@@ -1,110 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        img {
-            margin-top: 20px;
-            max-width: 80%;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1 {
+      color: #333;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .output {
+      margin-top: 20px;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <h1>AI Image Generator</h1>
-    <p>Type a prompt below to generate an AI-created image:</p>
-    <input type="text" id="prompt" placeholder="e.g., A futuristic cityscape" style="width: 300px;">
-    <br><br>
-    <select id="style">
-        <option value="realistic">Realistic</option>
-        <option value="cartoon">Cartoon</option>
-        <option value="abstract">Abstract</option>
-    </select>
-    <br><br>
-    <button onclick="generateImage()">Generate Image</button>
-    <div id="result"></div>
+  <h1>AI Image Generator</h1>
+  <input type="text" id="prompt" placeholder="Enter a description" />
+  <button onclick="generateImage()">Generate Image</button>
+  <div class="output" id="output"></div>
 
-    <script>
-        async function generateImage() {
-            const prompt = document.getElementById('prompt').value;
-            const style = document.getElementById('style').value;
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = "Generating...";
+  <script>
+    function generateImage() {
+      const prompt = document.getElementById("prompt").value;
+      const outputDiv = document.getElementById("output");
 
-            if (!prompt) {
-                resultDiv.innerHTML = "Please enter a prompt!";
-                return;
-            }
+      if (!prompt.trim()) {
+        outputDiv.innerHTML = "<p>Please enter a description.</p>";
+        return;
+      }
 
-            try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt, style: style })
-                });
+      // Simulated behavior
+      outputDiv.innerHTML = `<p>Generating an image for: <strong>${prompt}</strong></p>
+                             <img src="https://via.placeholder.com/400?text=AI+Image" alt="Generated Image Placeholder">`;
 
-                const data = await response.json();
-
-                resultDiv.innerHTML = `<img src="${data.imageUrl}" alt="Generated Image">`;
-            } catch (error) {
-                console.error("Error generating image:", error);
-                resultDiv.innerHTML = "Error generating image. Please try again.";
-            }
-        }
-    </script>
-
-    <script>
-        // Node.js server embedded in the HTML file (for demonstration purposes)
-        (() => {
-            const express = require('express');
-            const bodyParser = require('body-parser');
-            const fetch = require('node-fetch');
-
-            const app = express();
-            app.use(bodyParser.json());
-
-            const API_URL = "https://api.openai.com/v1/images/generations";
-            const API_KEY = "your-api-key";
-
-            app.post('/generate', async (req, res) => {
-                const { prompt, style } = req.body;
-
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${API_KEY}`
-                        },
-                        body: JSON.stringify({
-                            prompt: `${prompt} in ${style} style`,
-                            n: 1,
-                            size: "1024x1024"
-                        })
-                    });
-
-                    const data = await response.json();
-                    const imageUrl = data.data[0].url; // Get the first generated image
-                    res.json({ imageUrl });
-                } catch (error) {
-                    console.error("Error calling AI API:", error);
-                    res.status(500).send("Error generating image");
-                }
-            });
-
-            app.listen(3000, () => {
-                console.log("Server running on http://localhost:3000");
-            });
-        })();
-    </script>
+      // Note: In a real-world scenario, you would integrate with an API like OpenAI's DALL·E:
+      // fetch('https://api.openai.com/v1/images', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': 'Bearer YOUR_API_KEY'
+      //   },
+      //   body: JSON.stringify({ prompt })
+      // })
+      // .then(response => response.json())
+      // .then(data => {
+      //   outputDiv.innerHTML = `<img src="${data.image_url}" alt="Generated Image">`;
+      // })
+      // .catch(error => console.error('Error:', error));
+    }
+  </script>
 </body>
 </html>
