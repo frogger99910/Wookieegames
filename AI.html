@@ -4,37 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 80%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
     <h1>AI Image Generator</h1>
-    <input type="text" id="prompt" placeholder="Enter your image idea...">
+    <p>Type a prompt below to generate an AI-created image:</p>
+    <input type="text" id="prompt" placeholder="e.g., A futuristic cityscape" style="width: 300px;">
+    <br><br>
+    <select id="style">
+        <option value="realistic">Realistic</option>
+        <option value="cartoon">Cartoon</option>
+        <option value="abstract">Abstract</option>
+    </select>
+    <br><br>
     <button onclick="generateImage()">Generate Image</button>
     <div id="result"></div>
 
     <script>
         async function generateImage() {
             const prompt = document.getElementById('prompt').value;
+            const style = document.getElementById('style').value;
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = "Generating...";
 
-            // Simulated API Call for AI Image Generation
+            if (!prompt) {
+                resultDiv.innerHTML = "Please enter a prompt!";
+                return;
+            }
+
             try {
-                // Replace 'yourApiEndpoint' with the actual AI API URL
-                const response = await fetch('yourApiEndpoint', {
+                const response = await fetch('/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
+                    body: JSON.stringify({ prompt: prompt, style: style })
                 });
 
                 const data = await response.json();
 
-                // Assuming the API returns an image URL
                 resultDiv.innerHTML = `<img src="${data.imageUrl}" alt="Generated Image">`;
             } catch (error) {
                 console.error("Error generating image:", error);
                 resultDiv.innerHTML = "Error generating image. Please try again.";
             }
         }
+    </script>
+
+    <script>
+        // Node.js server embedded in the HTML file (for demonstration purposes)
+        (() => {
+            const express = require('express');
+            const bodyParser = require('body-parser');
+            const fetch = require('node-fetch');
+
+            const app = express();
+            app.use(bodyParser.json());
+
+            const API_URL = "https://api.openai.com/v1/images/generations";
+            const API_KEY = "your-api-key";
+
+            app.post('/generate', async (req, res) => {
+                const { prompt, style } = req.body;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            prompt: `${prompt} in ${style} style`,
+                            n: 1,
+                            size: "1024x1024"
+                        })
+                    });
+
+                    const data = await response.json();
+                    const imageUrl = data.data[0].url; // Get the first generated image
+                    res.json({ imageUrl });
+                } catch (error) {
+                    console.error("Error calling AI API:", error);
+                    res.status(500).send("Error generating image");
+                }
+            });
+
+            app.listen(3000, () => {
+                console.log("Server running on http://localhost:3000");
+            });
+        })();
     </script>
 </body>
 </html>
