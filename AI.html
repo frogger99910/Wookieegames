@@ -70,13 +70,12 @@
       setTimeout(() => {
         const generatedImageUrl = `https://via.placeholder.com/400.png?text=${encodeURIComponent(prompt)}`;
         
-        // Display the generated image on the site
+        // Replace spinner with the actual image
         outputDiv.innerHTML = `<p>Image generated for: <strong>${prompt}</strong></p>
                                <img src="${generatedImageUrl}" alt="Generated Image">`;
       }, 2000); // Simulated 2-second delay
 
-      // Note: In a real-world application, replace setTimeout with an actual API call:
-      // fetch('https://api.openai.com/v1/images', { ... })
+      // Note: Replace this placeholder with an actual API call to a service like OpenAI's DALL·E for real images.
     }
   </script>
 </body>
