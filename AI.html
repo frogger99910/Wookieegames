@@ -30,8 +30,8 @@
     }
     .spinner {
       margin: 20px auto;
-      border: 4px solid #f4f4f9; /* Light background color */
-      border-top: 4px solid #333; /* Darker spinner color */
+      border: 4px solid #f4f4f9;
+      border-top: 4px solid #333;
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -66,14 +66,22 @@
       // Display the loading spinner
       outputDiv.innerHTML = `<div class="spinner"></div><p>Generating an image for: <strong>${prompt}</strong></p>`;
 
-      // Simulate image generation locally
+      // Simulate image generation
       setTimeout(() => {
-        const generatedImageUrl = `generated_images/${encodeURIComponent(prompt.replace(/\s+/g, '_'))}.png`;
+        // Generate image URL from local folder
+        const formattedPrompt = prompt.replace(/\s+/g, '_').toLowerCase();
+        const generatedImageUrl = `generated_images/${formattedPrompt}.png`;
 
-        // Replace spinner with the actual image
-        outputDiv.innerHTML = `<p>Image generated for: <strong>${prompt}</strong></p>
-                               <img src="${generatedImageUrl}" alt="Generated Image">
-                               <p>If the image does not appear, ensure the file exists in the "generated_images" folder.</p>`;
+        // Check if the image exists using a simple fallback
+        const image = new Image();
+        image.onload = () => {
+          outputDiv.innerHTML = `<p>Image generated for: <strong>${prompt}</strong></p>
+                                 <img src="${generatedImageUrl}" alt="Generated Image">`;
+        };
+        image.onerror = () => {
+          outputDiv.innerHTML = `<p>Sorry, no image was found for: <strong>${prompt}</strong>. Please try a different description.</p>`;
+        };
+        image.src = generatedImageUrl;
       }, 2000); // Simulated 2-second delay
     }
   </script>
