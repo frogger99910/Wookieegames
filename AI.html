@@ -1,98 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>new AI Image Generator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #f4f4f9;
-    }
-    h1 {
-      color: #333;
-    }
-    input, button {
-      margin: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .output {
-      margin-top: 20px;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border: 1px solid #ddd;
-      margin-top: 20px;
-    }
-    .spinner {
-      margin: 20px auto;
-      border: 4px solid #f4f4f9;
-      border-top: 4px solid #333;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #fff;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        #chat-box .message {
+            margin-bottom: 10px;
+        }
+        #chat-box .message.user {
+            text-align: right;
+        }
+        #chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+        #chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-right: 1px solid #ddd;
+        }
+        #chat-input button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
-  <h1>AI Image Generator</h1>
-  <input type="text" id="prompt" placeholder="Enter a description" />
-  <button onclick="generateImage()">Generate Image</button>
-  <div class="output" id="output"></div>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <div id="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 
-  <script>
-    async function generateImage() {
-      const prompt = document.getElementById("prompt").value;
-      const outputDiv = document.getElementById("output");
+    <script>
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
+            if (messageText) {
+                appendMessage('user', messageText);
+                messageInput.value = '';
 
-      if (!prompt.trim()) {
-        outputDiv.innerHTML = "<p>Please enter a description.</p>";
-        return;
-      }
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '');
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        appendMessage('bot', xhr.responseText);
+                    }
+                };
+                xhr.send('message=' + encodeURIComponent(messageText));
+            }
+        }
 
-      // Display loading spinner
-      outputDiv.innerHTML = `<div class="spinner"></div><p>Generating an image for: <strong>${prompt}</strong></p>`;
+        function appendMessage(sender, message) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
 
-      try {
-        // Fetch the generated image from OpenAI's DALL·E API
-        const response = await fetch("https://api.openai.com/v1/images/generations", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer YOUR_API_KEY" // Replace YOUR_API_KEY with your actual OpenAI API key
-          },
-          body: JSON.stringify({
-            prompt: prompt,
-            n: 1,
-            size: "512x512" // Image size
-          })
-        });
+    <?php
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $message = $_POST['message'];
+        $response = '';
 
-        if (!response.ok) throw new Error("Failed to generate image");
+        if (preg_match('/hi|hello|hey/i', $message)) {
+            $response = 'Hello! How can I help you today?';
+        } elseif (preg_match('/your name/i', $message)) {
+            $response = 'I am your chatbot.';
+        } elseif (preg_match('/how are you/i', $message)) {
+            $response = 'I\'m doing great! How about you?';
+        } elseif (preg_match('/bye|quit|exit/i', $message)) {
+            $response = 'Goodbye! Have a great day!';
+        } else {
+            $response = 'I\'m sorry, I don\'t understand that.';
+        }
 
-        const data = await response.json();
-
-        // Replace spinner with the generated image
-        outputDiv.innerHTML = `<p>Image generated for: <strong>${prompt}</strong></p>
-                               <img src="${data.data[0].url}" alt="Generated Image">
-                               <a href="${data.data[0].url}" download="generated-image.png" class="download-link">Download Image</a>`;
-      } catch (error) {
-        outputDiv.innerHTML = `<p>Error: ${error.message}</p>`;
-      }
+        echo $response;
     }
-  </script>
+    ?>
 </body>
 </html>
