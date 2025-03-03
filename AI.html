@@ -126,6 +126,12 @@
             case preg_match('/bye|quit|exit/i', $message):
                 $response = 'Goodbye! Have a great day!';
                 break;
+            case preg_match('/time/i', $message):
+                $response = 'The current time is ' . date('h:i A') . '.';
+                break;
+            case preg_match('/date/i', $message):
+                $response = 'Today\'s date is ' . date('F j, Y') . '.';
+                break;
             default:
                 $response = 'I\'m sorry, I don\'t understand that.';
                 break;
@@ -136,4 +142,5 @@
     ?>
 </body>
 </html>
+
 
