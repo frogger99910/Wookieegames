@@ -5,15 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f06, #f9a);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         .button {
             background-color: #4CAF50;
@@ -26,6 +36,10 @@
             cursor: pointer;
             border-radius: 12px;
             margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #45a049;
         }
         @media (max-width: 600px) {
             .button {
@@ -38,9 +52,9 @@
     <link rel="icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/star-wars-color/229/chewbacca-1024.png">
 </head>
 <body>
-    <main>
+    <div class="container">
         <button class="button" onclick="window.location.href='game_page.html'" aria-label="Go to game page">Go to Game Page</button>
         <button class="button" onclick="window.location.href='AI.html'" aria-label="AI page">AI</button>
-    </main>
+    </div>
 </body>
 </html>
