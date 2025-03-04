@@ -132,7 +132,17 @@
             "exit": "Goodbye! Have a great day!",
             "time": `The current time is ${new Date().toLocaleTimeString()}.`,
             "date": `Today's date is ${new Date().toLocaleDateString()}.`,
-            "how has your day been": getRandomDayResponse()
+            "how has your day been": getRandomDayResponse(),
+            "what's up": "Not much, just here to assist you!",
+            "good morning": "Good morning! How can I assist you today?",
+            "good night": "Good night! Sleep well!",
+            "thank you": "You're welcome! Happy to help!",
+            "tell me a joke": getRandomJoke(),
+            "i need help": "Sure, I'm here to help! What do you need assistance with?",
+            "what can you do": "I can chat with you, provide information, tell jokes, and more!",
+            "where are you from": "I'm from the digital world, here to assist you!",
+            "what is your purpose": "My purpose is to assist and provide information to you!",
+            "can you help me with something": "Absolutely! What do you need help with?"
         };
 
         function getRandomDayResponse() {
@@ -142,6 +152,15 @@
                 "I had an awesome day helping people like you!"
             ];
             return dayResponses[Math.floor(Math.random() * dayResponses.length)];
+        }
+
+        function getRandomJoke() {
+            const jokes = [
+                "Why don't scientists trust atoms? Because they make up everything!",
+                "Why was the math book sad? Because it had too many problems.",
+                "Why did the scarecrow win an award? Because he was outstanding in his field!"
+            ];
+            return jokes[Math.floor(Math.random() * jokes.length)];
         }
 
         function sendMessage() {
