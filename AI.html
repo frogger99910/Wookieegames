@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Chatbot</title>
+    <title>Chatbot</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #ececec;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
         }
         #chat-container {
@@ -23,6 +24,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         #chat-box {
             flex: 1;
@@ -30,39 +32,40 @@
             overflow-y: auto;
             border-bottom: 1px solid #ddd;
         }
-        #chat-box .message {
+        .message {
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 5px;
         }
-        #chat-box .message.user {
+        .message.user {
             background-color: #007bff;
             color: #fff;
-            align-self: flex-end;
+            text-align: right;
         }
-        #chat-box .message.bot {
+        .message.bot {
             background-color: #f1f1f1;
             color: #333;
-            align-self: flex-start;
+            text-align: left;
         }
         #chat-input {
             display: flex;
+            border-top: 1px solid #ddd;
         }
         #chat-input input {
             flex: 1;
             padding: 15px;
             border: none;
-            border-radius: 0 0 0 8px;
             font-size: 16px;
+            border-radius: 0 0 0 8px;
         }
         #chat-input button {
             padding: 15px;
             background-color: #007bff;
             color: #fff;
             border: none;
-            border-radius: 0 0 8px 0;
             font-size: 16px;
             cursor: pointer;
+            border-radius: 0 0 8px 0;
         }
         #chat-input button:hover {
             background-color: #0056b3;
@@ -79,22 +82,30 @@
     </div>
 
     <script>
+        const responses = {
+            "hi": "Hello! How can I help you today?",
+            "hello": "Hello! How can I help you today?",
+            "hey": "Hey there! How can I help you today?",
+            "your name": "I am your enhanced chatbot.",
+            "how are you": "I'm doing great! How about you?",
+            "bye": "Goodbye! Have a great day!",
+            "quit": "Goodbye! Have a great day!",
+            "exit": "Goodbye! Have a great day!",
+            "time": `The current time is ${new Date().toLocaleTimeString()}.`,
+            "date": `Today's date is ${new Date().toLocaleDateString()}.`
+        };
+
         function sendMessage() {
             const messageInput = document.getElementById('message-input');
-            const messageText = messageInput.value.trim();
+            const messageText = messageInput.value.trim().toLowerCase();
             if (messageText) {
                 appendMessage('user', messageText);
                 messageInput.value = '';
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '');
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        appendMessage('bot', xhr.responseText);
-                    }
-                };
-                xhr.send('message=' + encodeURIComponent(messageText));
+                setTimeout(() => {
+                    const response = responses[messageText] || "I'm sorry, I don't understand that.";
+                    appendMessage('bot', response);
+                }, 500);
             }
         }
 
@@ -107,40 +118,5 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>
-
-    <?php
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $message = $_POST['message'];
-        $response = '';
-
-        switch (true) {
-            case preg_match('/hi|hello|hey/i', $message):
-                $response = 'Hello! How can I help you today?';
-                break;
-            case preg_match('/your name/i', $message):
-                $response = 'I am your enhanced chatbot.';
-                break;
-            case preg_match('/how are you/i', $message):
-                $response = 'I\'m doing great! How about you?';
-                break;
-            case preg_match('/bye|quit|exit/i', $message):
-                $response = 'Goodbye! Have a great day!';
-                break;
-            case preg_match('/time/i', $message):
-                $response = 'The current time is ' . date('h:i A') . '.';
-                break;
-            case preg_match('/date/i', $message):
-                $response = 'Today\'s date is ' . date('F j, Y') . '.';
-                break;
-            default:
-                $response = 'I\'m sorry, I don\'t understand that.';
-                break;
-        }
-
-        echo $response;
-    }
-    ?>
 </body>
 </html>
-
-
