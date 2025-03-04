@@ -33,6 +33,7 @@
             padding: 20px;
             overflow-y: auto;
             border-bottom: 1px solid #ddd;
+            scroll-behavior: smooth;
         }
         .message {
             margin-bottom: 10px;
@@ -201,16 +202,4 @@
         }
 
         function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-
-        function clearChat() {
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = '';
-        }
-    </script>
-</body>
-</html>
+            const typingIndicator = document.getElement
