@@ -5,33 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joke Generator</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #ffffff, #a1c4fd);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
+            color: #333;
         }
         .container {
             text-align: center;
-            background-color: #fff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        .button {
+            background-color: #007BFF;
             border: none;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 5px;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
             cursor: pointer;
+            border-radius: 12px;
+            margin: 10px;
+            transition: background-color 0.3s ease;
         }
-        button:hover {
+        .button:hover {
             background-color: #0056b3;
+        }
+        @media (max-width: 600px) {
+            .button {
+                font-size: 14px;
+                padding: 10px 20px;
+                margin: 5px;
+            }
         }
     </style>
 </head>
@@ -39,7 +54,7 @@
     <div class="container">
         <h1>Joke Generator</h1>
         <p id="joke">Click the button to get a random joke!</p>
-        <button onclick="generateJoke()">Get a Joke</button>
+        <button class="button" onclick="generateJoke()">Get a Joke</button>
     </div>
 
     <script>
@@ -48,7 +63,52 @@
             "I told my wife she was drawing her eyebrows too high. She looked surprised.",
             "Why did the scarecrow win an award? Because he was outstanding in his field!",
             "Why don't skeletons fight each other? They don't have the guts.",
-            "What do you call fake spaghetti? An impasta!"
+            "What do you call fake spaghetti? An impasta!",
+            "How does a penguin build its house? Igloos it together!",
+            "Why did the bicycle fall over? Because it was two-tired!",
+            "What do you call cheese that isn't yours? Nacho cheese!",
+            "Why was the math book sad? It had too many problems.",
+            "What do you get when you cross a snowman and a vampire? Frostbite.",
+            "Why did the golfer bring two pairs of pants? In case he got a hole in one.",
+            "What do you call a bear with no teeth? A gummy bear.",
+            "Why did the tomato turn red? Because it saw the salad dressing!",
+            "Why don't seagulls fly over the bay? Because then they'd be bagels.",
+            "What do you call a pile of cats? A meowtain.",
+            "Why did the chicken join a band? Because it had the drumsticks!",
+            "Why don't some couples go to the gym? Because some relationships don't work out.",
+            "How do you organize a space party? You planet.",
+            "Why did the scarecrow become a successful neurosurgeon? Because he was outstanding in his field.",
+            "Why don't programmers like nature? It has too many bugs.",
+            "What do you call an alligator in a vest? An investigator.",
+            "Why did the invisible man turn down the job offer? He couldn't see himself doing it.",
+            "Why did the coffee file a police report? It got mugged.",
+            "What do you get when you cross a snowman with a dog? Frostbite.",
+            "How do you catch a squirrel? Climb a tree and act like a nut!",
+            "What do you call a fish wearing a crown? A kingfish.",
+            "Why don't you ever see elephants hiding in trees? Because they're so good at it.",
+            "What's orange and sounds like a parrot? A carrot.",
+            "Why can't you give Elsa a balloon? Because she will let it go.",
+            "Why did the hipster burn his tongue? He drank his coffee before it was cool.",
+            "Why did the banana go to the doctor? Because it wasn't peeling well.",
+            "Why did the skeleton go to the party alone? Because he had no-body to go with.",
+            "What do you call a factory that makes good products? A satisfactory.",
+            "Why did the computer go to the doctor? Because it had a virus.",
+            "Why was the broom late? It swept in.",
+            "Why did the scarecrow become a neurosurgeon? Because he was outstanding in his field.",
+            "What do you get when you cross a snowman with a dog? Frostbite.",
+            "Why don't some couples go to the gym? Because some relationships don't work out.",
+            "How do you organize a space party? You planet.",
+            "What do you call an alligator in a vest? An investigator.",
+            "Why did the chicken join a band? Because it had the drumsticks.",
+            "Why don't you ever see elephants hiding in trees? Because they're so good at it.",
+            "Why did the invisible man turn down the job offer? He couldn't see himself doing it.",
+            "Why did the coffee file a police report? It got mugged.",
+            "Why did the skeleton go to the party alone? Because he had no-body to go with.",
+            "What do you call a factory that makes good products? A satisfactory.",
+            "How does a penguin build its house? Igloos it together!",
+            "Why did the bicycle fall over? Because it was two-tired.",
+            "What do you call cheese that isn't yours? Nacho cheese.",
+            "Why don't skeletons fight each other? They don't have the guts."
         ];
 
         function generateJoke() {
