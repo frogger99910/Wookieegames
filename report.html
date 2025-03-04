@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggestions Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+        }
+        .suggestions {
+            margin-top: 20px;
+        }
+        .suggestion-item {
+            background: #f4f4f4;
+            padding: 10px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Suggestions</h2>
+        <form id="suggestionForm">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <textarea id="suggestion" rows="4" placeholder="Your Suggestion" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div class="suggestions" id="suggestionsContainer">
+            <h3>Previous Suggestions</h3>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('suggestionForm');
+            const nameInput = document.getElementById('name');
+            const suggestionInput = document.getElementById('suggestion');
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const name = nameInput.value;
+                const suggestion = suggestionInput.value;
+
+                if (name && suggestion) {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.innerHTML = `<strong>${name}</strong><p>${suggestion}</p>`;
+                    suggestionsContainer.appendChild(suggestionItem);
+
+                    saveSuggestion(name, suggestion);
+
+                    nameInput.value = '';
+                    suggestionInput.value = '';
+                }
+            });
+
+            function saveSuggestion(name, suggestion) {
+                const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+                suggestions.push({ name, suggestion });
+                localStorage.setItem('suggestions', JSON.stringify(suggestions));
+            }
+
+            function loadSuggestions() {
+                const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+                suggestions.forEach(({ name, suggestion }) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.innerHTML = `<strong>${name}</strong><p>${suggestion}</p>`;
+                    suggestionsContainer.appendChild(suggestionItem);
+                });
+            }
+
+            loadSuggestions();
+        });
+    </script>
+</body>
+</html>
