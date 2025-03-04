@@ -3,52 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>game page</title>
+    <title>Game Page</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #ffffff, #a1c4fd);
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         .button {
-            background-color: #4CAF50;
+            background-color: #007BFF;
             border: none;
             color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 12px;
-            margin: 20px;
-            cursor: pointer;
-            border-radius: 12px;
-        }
-#gamebutton {
-            background-color: #4CAF50;
-            border: none;
-            color: blue;
             padding: 15px 32px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
-            font-size: 13px;
-            margin: 20px;
+            font-size: 16px;
             cursor: pointer;
             border-radius: 12px;
+            margin: 10px;
+            transition: background-color 0.3s ease;
         }
-        
+        .button:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 600px) {
+            .button {
+                font-size: 14px;
+                padding: 10px 20px;
+                margin: 5px;
+            }
+        }
     </style>
     <link rel="icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/star-wars-color/229/chewbacca-1024.png">
 </head>
 <body>
-    <button class="button" onclick="window.location.href='hi.html'">Portal</button>
-    <button id="gamebutton" class="button" onclick="window.location.href='two_player_games.html'">two player games</button>
-    <button id="gamebutton" class="button" onclick="window.location.href='drive_mad.html'">Drive Mad</button>
-    <button id="gamebutton" class="button" onclick="window.location.href='Aicode.html'">Ninja Platformer</button>
+    <div class="container">
+        <button class="button" onclick="window.location.href='hi.html'" aria-label="Portal">Portal</button>
+        <button class="button" onclick="window.location.href='two_player_games.html'" aria-label="Two Player Games">Two Player Games</button>
+        <button class="button" onclick="window.location.href='drive_mad.html'" aria-label="Drive Mad">Drive Mad</button>
+        <button class="button" onclick="window.location.href='Aicode.html'" aria-label="Ninja Platformer">Ninja Platformer</button>
+    </div>
 </body>
 </html>
