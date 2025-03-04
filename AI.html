@@ -131,8 +131,18 @@
             "quit": "Goodbye! Have a great day!",
             "exit": "Goodbye! Have a great day!",
             "time": `The current time is ${new Date().toLocaleTimeString()}.`,
-            "date": `Today's date is ${new Date().toLocaleDateString()}.`
+            "date": `Today's date is ${new Date().toLocaleDateString()}.`,
+            "how has your day been": getRandomDayResponse()
         };
+
+        function getRandomDayResponse() {
+            const dayResponses = [
+                "My day has been fantastic! Thanks for asking.",
+                "It's been a productive day so far! How about yours?",
+                "I had an awesome day helping people like you!"
+            ];
+            return dayResponses[Math.floor(Math.random() * dayResponses.length)];
+        }
 
         function sendMessage() {
             const messageInput = document.getElementById('message-input');
