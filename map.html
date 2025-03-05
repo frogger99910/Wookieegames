@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Orb with Green Dot</title>
+    <title>3D Earth with Green Dot</title>
     <style>
         body { margin: 0; overflow: hidden; }
     </style>
@@ -19,18 +19,22 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Create a sphere (orb) geometry
+        // Load the Earth texture
+        const textureLoader = new THREE.TextureLoader();
+        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/earth.jpg');
+
+        // Create a sphere (Earth) geometry
         const geometry = new THREE.SphereGeometry(1, 32, 32);
-        const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
-        const orb = new THREE.Mesh(geometry, material);
-        scene.add(orb);
+        const material = new THREE.MeshStandardMaterial({ map: earthTexture });
+        const earth = new THREE.Mesh(geometry, material);
+        scene.add(earth);
 
         // Create a small green dot (sphere)
         const dotGeometry = new THREE.SphereGeometry(0.05, 32, 32);
         const dotMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
         const greenDot = new THREE.Mesh(dotGeometry, dotMaterial);
-        greenDot.position.set(0, 1, 0); // Position the green dot on the surface of the orb
-        orb.add(greenDot); // Add the dot to the orb
+        greenDot.position.set(0, 1, 0); // Position the green dot on the surface of the Earth
+        earth.add(greenDot); // Add the dot to the Earth
 
         // Add a light source
         const light = new THREE.PointLight(0xffffff, 1, 100);
