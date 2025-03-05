@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Orb</title>
+    <title>3D Orb with Green Dot</title>
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        body { margin: 0; overflow: hidden; }
     </style>
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
         // Scene setup
         const scene = new THREE.Scene();
@@ -30,7 +30,7 @@
         const dotMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const greenDot = new THREE.Mesh(dotGeometry, dotMaterial);
         greenDot.position.set(0, 1, 0); // Position the green dot on the surface of the orb
-        scene.add(greenDot);
+        orb.add(greenDot); // Add the dot to the orb
 
         camera.position.z = 3;
 
@@ -56,4 +56,3 @@
     </script>
 </body>
 </html>
-
