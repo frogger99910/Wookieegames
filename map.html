@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Earth with Green Dot</title>
+    <title>Interactive Globe</title>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: yellow; /* Ensure background is always yellow */
+        }
+        canvas { display: block; }
     </style>
 </head>
 <body>
@@ -15,26 +20,19 @@
         // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         // Load the Earth texture
         const textureLoader = new THREE.TextureLoader();
-        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/earth_atmos_2048.jpg'); // Updated texture URL
+        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/earth_atmos_2048.jpg');
 
         // Create a sphere (Earth) geometry
         const geometry = new THREE.SphereGeometry(1, 32, 32);
         const material = new THREE.MeshStandardMaterial({ map: earthTexture });
         const earth = new THREE.Mesh(geometry, material);
         scene.add(earth);
-
-        // Create a small green dot (sphere)
-        const dotGeometry = new THREE.SphereGeometry(0.05, 32, 32);
-        const dotMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        const greenDot = new THREE.Mesh(dotGeometry, dotMaterial);
-        greenDot.position.set(0, 1, 0); // Position the green dot on the surface of the Earth
-        earth.add(greenDot); // Add the dot to the Earth
 
         // Add a light source
         const light = new THREE.PointLight(0xffffff, 1, 100);
