@@ -3,32 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <title>3D Orb</title>
     <style>
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
+        body { margin: 0; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Initialize the map and set its view to the chosen geographical coordinates and zoom level
-        var map = L.map('map').setView([37.7749, -122.4194], 13);
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-        // Add a tile layer to the map (OpenStreetMap tiles in this case)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        // Create a sphere (orb) geometry
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x0077ff, wireframe: true });
+        const orb = new THREE.Mesh(geometry, material);
+        scene.add(orb);
 
-        // Add a marker to the map
-        L.marker([37.7749, -122.4194]).addTo(map)
-            .bindPopup('San Francisco, CA.')
-            .openPopup();
+        // Create a small green dot (sphere)
+        const dotGeometry = new THREE.SphereGeometry(0.05, 32, 32);
+        const dotMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const greenDot = new THREE.Mesh(dotGeometry, dotMaterial);
+        greenDot.position.set(0, 1, 0); // Position the green dot on the surface of the orb
+        scene.add(greenDot);
+
+        camera.position.z = 3;
+
+        // Mouse controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Adjust the scene when the window is resized
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
     </script>
 </body>
 </html>
+
