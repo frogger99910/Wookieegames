@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ping Pong Game</title>
-    <link rel="icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/star-wars-color/229/chewbacca-1024.png">
     <style>
         canvas {
             display: block;
@@ -35,15 +34,12 @@
         let paddleHeight = 80; // Default paddle height
         let playerY = canvas.height / 2 - paddleHeight / 2;
         let aiY = canvas.height / 2 - paddleHeight / 2;
-        let ballX = [canvas.width / 2];
-        let ballY = [canvas.height / 2];
-        let ballSpeedX = [4];
-        let ballSpeedY = [4];
+        let balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
 
         let playerScore = 0;
         let aiScore = 0;
 
-        let breakawayPieces = Array.from({ length: paddleHeight / 10 }, (_, i) => true); // For breakaway paddles
+        let breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true); // For breakaway paddles
 
         function drawRoundedRect(x, y, width, height, radius, color) {
             ctx.fillStyle = color;
@@ -70,10 +66,7 @@
         }
 
         function resetBall(winner) {
-            ballX = [canvas.width / 2];
-            ballY = [canvas.height / 2];
-            ballSpeedX = [4];
-            ballSpeedY = [4];
+            balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
 
             if (winner === "AI") {
                 aiScore++;
@@ -89,44 +82,48 @@
         }
 
         function moveEverything() {
-            for (let i = 0; i < ballX.length; i++) {
-                ballX[i] += ballSpeedX[i];
-                ballY[i] += ballSpeedY[i];
+            balls.forEach((ball, index) => {
+                ball.x += ball.dx;
+                ball.y += ball.dy;
 
                 // Ball collision with top and bottom walls
-                if (ballY[i] - ballRadius < 0 || ballY[i] + ballRadius > canvas.height) {
-                    ballSpeedY[i] = -ballSpeedY[i];
+                if (ball.y - ballRadius < 0 || ball.y + ballRadius > canvas.height) {
+                    ball.dy = -ball.dy;
                 }
 
                 // Ball collision with paddles
-                if (ballX[i] - ballRadius < basePaddleWidth) {
-                    const paddleSegment = Math.floor((ballY[i] - playerY) / 10);
+                if (ball.x - ballRadius < basePaddleWidth) {
+                    const paddleSegment = Math.floor((ball.y - playerY) / 10);
                     if (paddleSegment >= 0 && paddleSegment < breakawayPieces.length && breakawayPieces[paddleSegment]) {
-                        ballSpeedX[i] = -ballSpeedX[i];
+                        ball.dx = -ball.dx;
                         if (currentLevel === 4) breakawayPieces[paddleSegment] = false; // Break away for level 4
                     } else {
-                        resetBall("AI");
+                        balls.splice(index, 1);
+                        if (balls.length === 0) resetBall("AI");
                     }
                 }
 
-                if (ballX[i] + ballRadius > canvas.width - basePaddleWidth) {
-                    if (ballY[i] > aiY && ballY[i] < aiY + paddleHeight) {
-                        ballSpeedX[i] = -ballSpeedX[i];
+                if (ball.x + ballRadius > canvas.width - basePaddleWidth) {
+                    if (ball.y > aiY && ball.y < aiY + paddleHeight) {
+                        ball.dx = -ball.dx;
                     } else {
-                        resetBall("Player");
+                        balls.splice(index, 1);
+                        if (balls.length === 0) resetBall("Player");
                     }
                 }
-            }
+            });
 
-            // AI paddle movement (still less effective for fairness)
+            // AI paddle movement
             const aiCenter = aiY + paddleHeight / 2;
-            if (aiCenter < ballY[0] - 10) aiY += 2;
-            else if (aiCenter > ballY[0] + 10) aiY -= 2;
+            if (aiCenter < balls[0].y - 10) aiY += 2;
+            else if (aiCenter > balls[0].y + 10) aiY -= 2;
         }
 
         function drawEverything() {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear screen
-            drawRect(0, 0, canvas.width, canvas.height, "black"); // Background
+
+            // Draw background
+            drawRoundedRect(0, 0, canvas.width, canvas.height, 0, "black");
 
             // Draw player paddle (with breakaway pieces)
             for (let i = 0; i < breakawayPieces.length; i++) {
@@ -139,36 +136,41 @@
             drawRoundedRect(canvas.width - basePaddleWidth, aiY, basePaddleWidth, paddleHeight, 5, "green");
 
             // Draw balls
-            for (let i = 0; i < ballX.length; i++) {
-                drawCircle(ballX[i], ballY[i], ballRadius, "green");
-            }
+            balls.forEach((ball) => {
+                drawCircle(ball.x, ball.y, ballRadius, "green");
+            });
         }
 
         function initializeLevel() {
-            const level = Math.floor(Math.random() * 5) + 1;
-            switch (level) {
+            currentLevel = Math.floor(Math.random() * 5) + 1;
+            switch (currentLevel) {
                 case 1: // Normal mode
                     paddleHeight = 80;
                     breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
-                    ballX = [canvas.width / 2];
-                    ballY = [canvas.height / 2];
+                    balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
                     break;
                 case 2: // Small paddles
                     paddleHeight = 40;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
                     break;
                 case 3: // Big paddles
                     paddleHeight = 120;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
                     break;
                 case 4: // Breakaway paddles
                     paddleHeight = 80;
                     breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
                     break;
                 case 5: // Five balls
                     paddleHeight = 80;
-                    ballX = Array.from({ length: 5 }, () => canvas.width / 2);
-                    ballY = Array.from({ length: 5 }, (_, i) => canvas.height / 2 + i * 20 - 40);
-                    ballSpeedX = Array.from({ length: 5 }, () => (Math.random() > 0.5 ? 4 : -4));
-                    ballSpeedY = Array.from({ length: 5 }, () => (Math.random() * 6) - 3);
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    balls = Array.from({ length: 5 }, () => ({
+                        x: canvas.width / 2,
+                        y: Math.random() * canvas.height,
+                        dx: Math.random() > 0.5 ? 4 : -4,
+                        dy: (Math.random() * 6) - 3,
+                    }));
                     break;
             }
         }
