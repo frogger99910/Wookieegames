@@ -34,13 +34,13 @@
 
         let playerY = canvas.height / 2 - paddleHeight / 2;
         let aiY = canvas.height / 2 - paddleHeight / 2;
-        let ballX = canvas.width / 2;
-        let ballY = canvas.height / 2;
-        let ballSpeedX = 4;
-        let ballSpeedY = 4;
+        let balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
 
         let playerScore = 0;
         let aiScore = 0;
+
+        let breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+        let currentLevel = 1;
 
         function drawRect(x, y, width, height, color) {
             ctx.fillStyle = color;
@@ -56,17 +56,12 @@
         }
 
         function resetBall(winner) {
-            ballX = canvas.width / 2;
-            ballY = canvas.height / 2;
-            ballSpeedX = -ballSpeedX;
-            ballSpeedY = (Math.random() * 6) - 3;
-
+            balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
             if (winner === "AI") {
                 aiScore++;
             } else if (winner === "Player") {
                 playerScore++;
             }
-
             updateScore();
         }
 
@@ -75,48 +70,93 @@
         }
 
         function moveEverything() {
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
+            balls.forEach((ball, index) => {
+                ball.x += ball.dx;
+                ball.y += ball.dy;
 
-            // Ball collision with top and bottom walls
-            if (ballY - ballRadius < 0 || ballY + ballRadius > canvas.height) {
-                ballSpeedY = -ballSpeedY;
-            }
-
-            // Ball collision with player paddle
-            if (ballX - ballRadius < paddleWidth) {
-                if (ballY > playerY && ballY < playerY + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
-                } else {
-                    resetBall("AI");
+                if (ball.y - ballRadius < 0 || ball.y + ballRadius > canvas.height) {
+                    ball.dy = -ball.dy;
                 }
-            }
 
-            // Ball collision with AI paddle
-            if (ballX + ballRadius > canvas.width - paddleWidth) {
-                if (ballY > aiY && ballY < aiY + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
-                } else {
-                    resetBall("Player");
+                if (ball.x - ballRadius < paddleWidth) {
+                    const paddleSegment = Math.floor((ball.y - playerY) / 10);
+                    if (paddleSegment >= 0 && paddleSegment < breakawayPieces.length && breakawayPieces[paddleSegment]) {
+                        ball.dx = -ball.dx;
+                        if (currentLevel === 4) breakawayPieces[paddleSegment] = false;
+                    } else {
+                        balls.splice(index, 1);
+                        if (balls.length === 0) resetBall("AI");
+                    }
                 }
-            }
 
-            // AI paddle movement (only moves when ball is on AI's side)
-            if (ballX > canvas.width / 2) {
+                if (ball.x + ballRadius > canvas.width - paddleWidth) {
+                    if (ball.y > aiY && ball.y < aiY + paddleHeight) {
+                        ball.dx = -ball.dx;
+                    } else {
+                        balls.splice(index, 1);
+                        if (balls.length === 0) resetBall("Player");
+                    }
+                }
+            });
+
+            if (balls.length > 0 && balls[0].x > canvas.width / 2) {
                 const aiCenter = aiY + paddleHeight / 2;
-                if (aiCenter < ballY - 10) {
-                    aiY += 6; // Faster movement
-                } else if (aiCenter > ballY + 10) {
-                    aiY -= 6; // Faster movement
+                if (aiCenter < balls[0].y - 10) {
+                    aiY += 6;
+                } else if (aiCenter > balls[0].y + 10) {
+                    aiY -= 6;
                 }
             }
         }
 
         function drawEverything() {
-            drawRect(0, 0, canvas.width, canvas.height, "black"); // Clear screen
-            drawRect(0, playerY, paddleWidth, paddleHeight, "green"); // Player paddle
-            drawRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight, "green"); // AI paddle
-            drawCircle(ballX, ballY, ballRadius, "green"); // Ball
+            drawRect(0, 0, canvas.width, canvas.height, "black");
+
+            for (let i = 0; i < breakawayPieces.length; i++) {
+                if (breakawayPieces[i]) {
+                    drawRect(0, playerY + i * 10, paddleWidth, 10, "green");
+                }
+            }
+
+            drawRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight, "green");
+
+            balls.forEach((ball) => {
+                drawCircle(ball.x, ball.y, ballRadius, "green");
+            });
+        }
+
+        function initializeLevel() {
+            currentLevel = Math.floor(Math.random() * 5) + 1;
+            switch (currentLevel) {
+                case 1:
+                    paddleHeight = 80;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
+                    break;
+                case 2:
+                    paddleHeight = 40;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    break;
+                case 3:
+                    paddleHeight = 120;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    break;
+                case 4:
+                    paddleHeight = 80;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    balls = [{ x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4 }];
+                    break;
+                case 5:
+                    paddleHeight = 80;
+                    breakawayPieces = Array.from({ length: paddleHeight / 10 }, () => true);
+                    balls = Array.from({ length: 5 }, () => ({
+                        x: canvas.width / 2,
+                        y: Math.random() * canvas.height,
+                        dx: Math.random() > 0.5 ? 4 : -4,
+                        dy: (Math.random() * 6) - 3,
+                    }));
+                    break;
+            }
         }
 
         function gameLoop() {
@@ -132,6 +172,7 @@
             playerY = Math.max(0, Math.min(mouseY - paddleHeight / 2, canvas.height - paddleHeight));
         });
 
+        initializeLevel();
         gameLoop();
     </script>
 </body>
