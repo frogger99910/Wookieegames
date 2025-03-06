@@ -16,13 +16,24 @@
         canvas {
             border: 1px solid #fff;
         }
+        .level-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: yellow;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <div class="level-up" id="levelUpMessage">Level Up!</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const context = canvas.getContext('2d');
+        const levelUpMessage = document.getElementById('levelUpMessage');
 
         canvas.width = 800;
         canvas.height = 600;
@@ -37,8 +48,12 @@
             dx: 0
         };
 
+        let level = 1;
+        let score = 0;
         const enemySize = 50;
         const enemies = [];
+        let enemySpeed = 2;
+        let enemyFrequency = 0.02;
 
         function drawPlayer() {
             context.fillStyle = player.color;
@@ -62,20 +77,34 @@
 
         function updateEnemies() {
             enemies.forEach((enemy, index) => {
-                enemy.y += 2;
+                enemy.y += enemySpeed;
 
                 if (enemy.y > canvas.height) {
                     enemies.splice(index, 1);
+                    score++;
+                    if (score % 10 === 0) {
+                        level++;
+                        enemySpeed += 1;
+                        enemyFrequency += 0.01;
+                        showLevelUpMessage();
+                    }
                 }
             });
 
             // Add new enemy
-            if (Math.random() < 0.02) {
+            if (Math.random() < enemyFrequency) {
                 enemies.push({
                     x: Math.random() * (canvas.width - enemySize),
                     y: 0
                 });
             }
+        }
+
+        function showLevelUpMessage() {
+            levelUpMessage.style.display = 'block';
+            setTimeout(() => {
+                levelUpMessage.style.display = 'none';
+            }, 2000);
         }
 
         function detectCollision() {
