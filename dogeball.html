@@ -65,6 +65,9 @@
         const enemies = [];
         let enemySpeed = 2;
         let enemyFrequency = 0.02;
+        let enemiesDodged = 0;
+        let enemiesToNextLevel = 10;
+        const trackingEnemySpeed = 1;
 
         function drawPlayer() {
             context.fillStyle = player.color;
@@ -73,7 +76,7 @@
 
         function drawEnemies() {
             enemies.forEach(enemy => {
-                context.fillStyle = 'red';
+                context.fillStyle = enemy.color;
                 context.fillRect(enemy.x, enemy.y, enemySize, enemySize);
             });
         }
@@ -88,15 +91,27 @@
 
         function updateEnemies() {
             enemies.forEach((enemy, index) => {
-                enemy.y += enemySpeed;
+                if (enemy.type === 'normal') {
+                    enemy.y += enemySpeed;
+                } else if (enemy.type === 'tracking') {
+                    if (player.x < enemy.x) {
+                        enemy.x -= trackingEnemySpeed;
+                    } else if (player.x > enemy.x) {
+                        enemy.x += trackingEnemySpeed;
+                    }
+                    enemy.y += enemySpeed;
+                }
 
                 if (enemy.y > canvas.height) {
                     enemies.splice(index, 1);
                     score++;
-                    if (score % 10 === 0) {
+                    enemiesDodged++;
+                    if (enemiesDodged >= enemiesToNextLevel) {
                         level++;
                         enemySpeed += 1;
                         enemyFrequency += 0.01;
+                        enemiesDodged = 0;
+                        enemiesToNextLevel += 5;
                         showLevelUpMessage();
                     }
                 }
@@ -104,9 +119,13 @@
 
             // Add new enemy
             if (Math.random() < enemyFrequency) {
+                const enemyType = Math.random() < 0.2 ? 'tracking' : 'normal'; // 20% chance of a tracking enemy
+                const enemyColor = enemyType === 'tracking' ? 'blue' : 'red';
                 enemies.push({
                     x: Math.random() * (canvas.width - enemySize),
-                    y: 0
+                    y: 0,
+                    type: enemyType,
+                    color: enemyColor
                 });
             }
         }
