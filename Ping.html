@@ -100,8 +100,13 @@
                 }
             }
 
-            // AI paddle follows the ball
-            aiY += (ballY - (aiY + paddleHeight / 2)) * 0.07;
+            // AI paddle follows the ball more slowly
+            const aiCenter = aiY + paddleHeight / 2;
+            if (aiCenter < ballY - 10) {
+                aiY += 2; // Slower movement
+            } else if (aiCenter > ballY + 10) {
+                aiY -= 2; // Slower movement
+            }
         }
 
         function drawEverything() {
