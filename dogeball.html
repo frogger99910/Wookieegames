@@ -16,6 +16,15 @@
         canvas {
             border: 1px solid #fff;
         }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: red;
+            display: none;
+        }
         .level-up {
             position: absolute;
             top: 50%;
@@ -29,10 +38,12 @@
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <div class="game-over" id="gameOverMessage">You Lost</div>
     <div class="level-up" id="levelUpMessage">Level Up!</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const context = canvas.getContext('2d');
+        const gameOverMessage = document.getElementById('gameOverMessage');
         const levelUpMessage = document.getElementById('levelUpMessage');
 
         canvas.width = 800;
@@ -107,6 +118,13 @@
             }, 2000);
         }
 
+        function gameOver() {
+            gameOverMessage.style.display = 'block';
+            setTimeout(() => {
+                document.location.reload();
+            }, 3000);
+        }
+
         function detectCollision() {
             enemies.forEach(enemy => {
                 if (
@@ -115,8 +133,7 @@
                     player.y < enemy.y + enemySize &&
                     player.y + player.height > enemy.y
                 ) {
-                    alert('Game Over!');
-                    document.location.reload();
+                    gameOver();
                 }
             });
         }
