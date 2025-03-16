@@ -30,6 +30,7 @@
             margin: 5px 0;
         }
     </style>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -45,6 +46,8 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
+
             const form = document.getElementById('suggestionForm');
             const nameInput = document.getElementById('name');
             const suggestionInput = document.getElementById('suggestion');
@@ -62,6 +65,7 @@
                     suggestionsContainer.appendChild(suggestionItem);
 
                     saveSuggestion(name, suggestion);
+                    sendEmail(name, suggestion);
 
                     nameInput.value = '';
                     suggestionInput.value = '';
@@ -82,6 +86,22 @@
                     suggestionItem.innerHTML = `<strong>${name}</strong><p>${suggestion}</p>`;
                     suggestionsContainer.appendChild(suggestionItem);
                 });
+            }
+
+            function sendEmail(name, suggestion) {
+                const templateParams = {
+                    user_name: name,
+                    user_suggestion: suggestion,
+                    to_email: "ben.r.brunson@gmail.com"
+                };
+
+                emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+                    .then((response) => {
+                        alert('Suggestion sent successfully!');
+                    }, (error) => {
+                        console.error('Failed to send email:', error);
+                        alert('Failed to send suggestion. Please try again.');
+                    });
             }
 
             loadSuggestions();
