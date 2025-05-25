@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Page</title>
+    <link rel="icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/star-wars-color/229/chewbacca-1024.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
@@ -18,43 +19,59 @@
             background: linear-gradient(135deg, #ffffff, #a1c4fd);
         }
         .container {
-            text-align: center;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
             padding: 20px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
-        .button {
+        .game-button {
             background-color: #007BFF;
             border: none;
             color: white;
-            padding: 15px 32px;
+            padding: 20px;
             text-align: center;
             text-decoration: none;
             font-size: 16px;
             cursor: pointer;
             border-radius: 12px;
-            margin: 10px;
             transition: background-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 200px;
         }
-        .button:hover {
+        .game-button:hover {
             background-color: #0056b3;
         }
-        @media (max-width: 600px) {
-            .button {
-                font-size: 14px;
-                padding: 10px 20px;
-                margin: 5px;
-            }
+        .game-button img {
+            width: 150px; /* Increased size */
+            height: 150px;
+            border-radius: 10px;
+        }
+        .game-button span {
+            font-weight: bold;
         }
     </style>
-    <link rel="icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/star-wars-color/229/chewbacca-1024.png">
 </head>
 <body>
     <div class="container">
-        <button class="button" onclick="window.location.href='Aicode.html'" aria-label="Ninja Platformer">Ninja Platformer</button>
-        <button class="button" onclick="window.location.href='dogeball.html'" aria-label="Doge Ball">Doge Ball</button>
-        <button class="button" onclick="window.location.href='Ping.html'" aria-label="Ping">Ping Pong</button>
+        <button class="game-button" onclick="window.location.href='Aicode.html'" aria-label="Ninja Platformer">
+            <img src="https://bing.com/th/id/BCO.0594505e-11c2-4bb7-a224-d2b713b38582.png" alt="Ninja Platformer">
+            <span>Ninja Platformer</span>
+        </button>
+        <button class="game-button" onclick="window.location.href='dogeball.html'" aria-label="dodge Ball">
+            <img src="https://bing.com/th/id/BCO.72ad94bc-dc37-4083-9e5d-47e4cee4eeed.png" alt="Doge Ball">
+            <span>Doge Ball</span>
+        </button>
+        <button class="game-button" onclick="window.location.href='Ping.html'" aria-label="Ping Pong">
+            <img src="https://bing.com/th/id/BCO.77935401-ae77-4a1d-83ce-b40ee80e8db8.png" alt="Ping Pong">
+            <span>Ping Pong</span>
+        </button>
     </div>
 </body>
 </html>
+
