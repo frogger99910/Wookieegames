@@ -1,111 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        button {
-            padding: 10px 20px;
-        }
-        .suggestions {
-            margin-top: 20px;
-        }
-        .suggestion-item {
-            background: #f4f4f4;
-            padding: 10px;
-            margin: 5px 0;
-        }
-    </style>
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+    }
+    .suggestions {
+      margin-top: 20px;
+    }
+    .suggestion-item {
+      background: #f4f4f4;
+      padding: 10px;
+      margin: 5px 0;
+      position: relative;
+    }
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Suggestions</h2>
-        <form id="suggestionForm">
-            <input type="text" id="name" placeholder="Your Name" required>
-            <textarea id="suggestion" rows="4" placeholder="Your Suggestion" required></textarea>
-            <button type="submit">Submit</button>
-        </form>
-        <div class="suggestions" id="suggestionsContainer">
-            <h3>Previous Suggestions</h3>
-        </div>
+  <div class="container">
+    <h2>Notes</h2>
+    <form id="suggestionForm">
+      <input type="text" id="name" placeholder="Title" required autocomplete="off" />
+      <textarea id="suggestion" rows="4" placeholder="type your note here" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+    <div class="suggestions" id="suggestionsContainer">
+      <h3>your notes</h3>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
+  </div>
 
-            const form = document.getElementById('suggestionForm');
-            const nameInput = document.getElementById('name');
-            const suggestionInput = document.getElementById('suggestion');
-            const suggestionsContainer = document.getElementById('suggestionsContainer');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('suggestionForm');
+      const nameInput = document.getElementById('name');
+      const suggestionInput = document.getElementById('suggestion');
+      const suggestionsContainer = document.getElementById('suggestionsContainer');
 
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const name = nameInput.value;
-                const suggestion = suggestionInput.value;
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = nameInput.value;
+        const suggestion = suggestionInput.value;
 
-                if (name && suggestion) {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.classList.add('suggestion-item');
-                    suggestionItem.innerHTML = `<strong>${name}</strong><p>${suggestion}</p>`;
-                    suggestionsContainer.appendChild(suggestionItem);
+        if (name && suggestion) {
+          const suggestionItem = createSuggestionItem(name, suggestion);
+          suggestionsContainer.appendChild(suggestionItem);
+          saveSuggestion(name, suggestion);
+          nameInput.value = '';
+          suggestionInput.value = '';
+        }
+      });
 
-                    saveSuggestion(name, suggestion);
-                    sendEmail(name, suggestion);
+      function createSuggestionItem(name, suggestion) {
+        const item = document.createElement('div');
+        item.classList.add('suggestion-item');
+        item.innerHTML = `
+          <strong>${name}</strong>
+          <p>${suggestion}</p>
+          <button class="delete-btn">Delete</button>
+        `;
 
-                    nameInput.value = '';
-                    suggestionInput.value = '';
-                }
-            });
-
-            function saveSuggestion(name, suggestion) {
-                const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-                suggestions.push({ name, suggestion });
-                localStorage.setItem('suggestions', JSON.stringify(suggestions));
-            }
-
-            function loadSuggestions() {
-                const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-                suggestions.forEach(({ name, suggestion }) => {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.classList.add('suggestion-item');
-                    suggestionItem.innerHTML = `<strong>${name}</strong><p>${suggestion}</p>`;
-                    suggestionsContainer.appendChild(suggestionItem);
-                });
-            }
-
-            function sendEmail(name, suggestion) {
-                const templateParams = {
-                    user_name: name,
-                    user_suggestion: suggestion,
-                    to_email: "ben.r.brunson@gmail.com"
-                };
-
-                emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-                    .then((response) => {
-                        alert('Suggestion sent successfully!');
-                    }, (error) => {
-                        console.error('Failed to send email:', error);
-                        alert('Failed to send suggestion. Please try again.');
-                    });
-            }
-
-            loadSuggestions();
+        const deleteBtn = item.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', () => {
+          item.remove();
+          deleteSuggestion(name, suggestion);
         });
-    </script>
+
+        return item;
+      }
+
+      function saveSuggestion(name, suggestion) {
+        const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+        suggestions.push({ name, suggestion });
+        localStorage.setItem('suggestions', JSON.stringify(suggestions));
+      }
+
+      function deleteSuggestion(name, suggestion) {
+        const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+        const updated = suggestions.filter(item => !(item.name === name && item.suggestion === suggestion));
+        localStorage.setItem('suggestions', JSON.stringify(updated));
+      }
+
+      function loadSuggestions() {
+        const suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+        suggestions.forEach(({ name, suggestion }) => {
+          const item = createSuggestionItem(name, suggestion);
+          suggestionsContainer.appendChild(item);
+        });
+      }
+
+      loadSuggestions();
+    });
+  </script>
 </body>
 </html>
