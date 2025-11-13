@@ -1,1 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coin Clicker — Mouse Only</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --panel:#0b1220;
+      --accent:#ffcc33;
+      --muted:#9aa6b2;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071026 0%, #081426 60%);color:#e6eef6}
+    .container{max-width:1000px;margin:24px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-size:1.25rem}
+    .status{text-align:right}
+    .big-counter{font-size:2rem;font-weight:700;color:var(--accent)}
+    .sub{font-size:0.9rem;color:var(--muted)}
+    .game-area{display:flex;gap:20px;align-items:center;justify-content:center;margin:18px 0}
+    .click-button{
+      width:220px;height:220px;border-radius:999px;background:linear-gradient(180deg,#ffd761,#ffb400);border:none;
+      color:#07202a;font-size:1.8rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.5),inset 0 -6px 18px rgba(0,0,0,0.12);
+      cursor:pointer;transition:transform .08s ease, box-shadow .08s ease;outline:none;
+      user-select:none;
+    }
+    .click-button:active{transform:scale(.98);box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+    .controls{display:flex;flex-direction:column;gap:8px;align-items:center}
+    .controls button{background:var(--panel);border:1px solid rgba(255,255,255,0.03);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .hint{font-size:0.85rem;color:var(--muted);text-align:center}
+    .panels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .panel{background:var(--panel);padding:12px;border-radius:10px;border:1px solid var(--glass)}
+    .panel h2{margin:0 0 8px 0;font-size:1rem}
+    .list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto;padding-right:6px}
+    .item{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+    .item .meta{display:flex;flex-direction:column}
+    .item button{background:var(--accent);border:none;padding:8px 10px;border-radius:8px;color:#07202a;font-weight:700;cursor:pointer}
+    .item button:disabled{opacity:.5;cursor:not-allowed}
+    .small{font-size:0.85rem;color:var(--muted)}
+    .achieved{background:linear-gradient(90deg,#103f37, #154a3f);border:1px solid rgba(255,255,255,0.02)}
+    footer{margin-top:12px;text-align:center;color:var(--muted)}
+    .toast{
+      position:fixed;right:18px;bottom:18px;background:#062b1a;color:#bff4c4;padding:10px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.4);
+      opacity:1;transition:opacity .6s ease;
+    }
+    .notice{
+      margin-top:8px;color:#ffd; background: rgba(255,255,255,0.03); padding:6px 10px;border-radius:8px;font-size:0.85rem;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    @media (max-width:900px){.panels{grid-template-columns:1fr;}.click-button{width:180px;height:180px}}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Coin Clicker — Mouse Only</h1>
+      <div class="status">
+        <div id="coins" class="big-counter">0</div>
+        <div class="sub">Coins • <span id="cps">0</span>/s • Click: <span id="clickValue">1</span></div>
+      </div>
+    </header>
 
+    <section class="game-area">
+      <button id="clickBtn" class="click-button" aria-label="Click for coins" title="Use a real mouse click">Click</button>
+      <div class="controls">
+        <button id="saveBtn">Save</button>
+        <button id="resetBtn">Reset</button>
+        <div class="hint">Must use a physical mouse pointer to earn coins — keyboard/touch won't count.</div>
+        <div id="attemptNotice" class="notice" style="display:none;">Input ignored: only real mouse clicks count.</div>
+      </div>
+    </section>
+
+    <section class="panels">
+      <div class="panel">
+        <h2>Shop</h2>
+        <div id="shopList" class="list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Upgrades</h2>
+        <div id="upgradeList" class="list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Achievements</h2>
+        <div id="achList" class="list"></div>
+      </div>
+    </section>
+
+    <footer>
+      <small>Autos and upgrades cost coins. Game auto-saves every 10s. Only real mouse clicks count.</small>
+    </footer>
+  </main>
+
+  <script>
+    // Single-file mouse-only clicker
+    const defaultState = {
+      coins: 0,
+      totalClicks: 0,
+      clickValue: 1,
+      totalEarned: 0,
+      autos: [
+        { id: 'auto1', name: 'Worker', cost: 15, cps: 0.1, count: 0 },
+        { id: 'auto2', name: 'Factory', cost: 150, cps: 1, count: 0 },
+        { id: 'auto3', name: 'Bank', cost: 1200, cps: 8, count: 0 }
+      ],
+      upgrades: [
+        { id: 'up1', name: 'Strong Fingers', desc: '+1 click', cost: 50, purchased: false },
+        { id: 'up2', name: 'Double Click', desc: 'x2 click value', cost: 500, purchased: false }
+      ],
+      achievements: {
+        clicks100: false,
+        coins1000: false
+      },
+      lastSave: null
+    };
+
+    // load/merge
+    function loadState(){
+      try {
+        const raw = localStorage.getItem('coinClickerState');
+        if (!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        const merged = Object.assign(structuredClone(defaultState), parsed);
+        merged.autos = parsed.autos || defaultState.autos;
+        merged.upgrades = parsed.upgrades || defaultState.upgrades;
+        merged.achievements = Object.assign(defaultState.achievements, parsed.achievements||{});
+        return merged;
+      } catch(e) {
+        console.error('Load failed', e);
+        return structuredClone(defaultState);
+      }
+    }
+
+    let state = loadState();
+
+    // DOM refs
+    const coinsEl = document.getElementById('coins');
+    const cpsEl = document.getElementById('cps');
+    const clickValueEl = document.getElementById('clickValue');
+    const clickBtn = document.getElementById('clickBtn');
+    const shopList = document.getElementById('shopList');
+    const upgradeList = document.getElementById('upgradeList');
+    const achList = document.getElementById('achList');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const attemptNotice = document.getElementById('attemptNotice');
+
+    function format(n){
+      if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+      if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+      if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+      if (n >= 1000) return (n/1000).toFixed(2) + 'K';
+      return Math.floor(n).toString();
+    }
+
+    function saveState(){
+      state.lastSave = new Date().toISOString();
+      try {
+        localStorage.setItem('coinClickerState', JSON.stringify(state));
+        saveBtn.textContent = 'Saved';
+        setTimeout(()=> saveBtn.textContent = 'Save', 900);
+      } catch(e){
+        console.error('Save failed', e);
+      }
+    }
+
+    function earnedCPS(){
+      return state.autos.reduce((s,a)=> s + a.cps * a.count, 0);
+    }
+
+    function render(){
+      coinsEl.textContent = format(state.coins);
+      cpsEl.textContent = format(earnedCPS());
+      clickValueEl.textContent = format(state.clickValue);
+
+      shopList.innerHTML = '';
+      state.autos.forEach(a=>{
+        const item = document.createElement('div');
+        item.className = 'item';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.textContent = `${a.name} ×${a.count}`;
+        const sub = document.createElement('div');
+        sub.className = 'small';
+        sub.textContent = `${a.cps} cps • cost ${format(a.cost)}`;
+        meta.appendChild(title);
+        meta.appendChild(sub);
+
+        const btn = document.createElement('button');
+        btn.textContent = `Buy (${format(a.cost)})`;
+        btn.disabled = state.coins < a.cost;
+        btn.addEventListener('click', ()=> buyAuto(a.id));
+
+        item.appendChild(meta);
+        item.appendChild(btn);
+        shopList.appendChild(item);
+      });
+
+      upgradeList.innerHTML = '';
+      state.upgrades.forEach(u=>{
+        const item = document.createElement('div');
+        item.className = 'item' + (u.purchased ? ' achieved' : '');
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.textContent = u.name + (u.purchased ? ' (bought)' : '');
+        const sub = document.createElement('div');
+        sub.className = 'small';
+        sub.textContent = `${u.desc} • cost ${format(u.cost)}`;
+        meta.appendChild(title);
+        meta.appendChild(sub);
+
+        const btn = document.createElement('button');
+        btn.textContent = u.purchased ? 'Owned' : `Buy (${format(u.cost)})`;
+        btn.disabled = u.purchased || state.coins < u.cost;
+        btn.addEventListener('click', ()=> buyUpgrade(u.id));
+
+        item.appendChild(meta);
+        item.appendChild(btn);
+        upgradeList.appendChild(item);
+      });
+
+      achList.innerHTML = '';
+      const achEntries = [
+        { id: 'clicks100', name: '100 Clicks', unlocked: state.achievements.clicks100, desc: 'Make 100 physical mouse clicks' },
+        { id: 'coins1000', name: '1,000 Coins', unlocked: state.achievements.coins1000, desc: 'Accumulate 1,000 total coins earned' }
+      ];
+      achEntries.forEach(a=>{
+        const item = document.createElement('div');
+        item.className = 'item' + (a.unlocked ? ' achieved' : '');
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `<div>${a.name}</div><div class="small">${a.desc}</div>`;
+        const right = document.createElement('div');
+        right.className = 'small';
+        right.textContent = a.unlocked ? 'Unlocked' : 'Locked';
+        item.appendChild(meta);
+        item.appendChild(right);
+        achList.appendChild(item);
+      });
+    }
+
+    function buyAuto(id){
+      const a = state.autos.find(x=>x.id===id);
+      if (!a) return;
+      if (state.coins < a.cost) return;
+      state.coins -= a.cost;
+      a.count += 1;
+      a.cost = Math.ceil(a.cost * 1.15);
+      render();
+    }
+
+    function buyUpgrade(id){
+      const u = state.upgrades.find(x=>x.id===id);
+      if (!u || u.purchased) return;
+      if (state.coins < u.cost) return;
+      state.coins -= u.cost;
+      u.purchased = true;
+      // apply effect
+      if (u.id === 'up1') state.clickValue += 1;
+      if (u.id === 'up2') state.clickValue *= 2;
+      render();
+    }
+
+    function checkAchievements(){
+      if (!state.achievements.clicks100 && state.totalClicks >= 100){
+        state.achievements.clicks100 = true;
+        notify('Achievement unlocked: 100 Clicks!');
+      }
+      if (!state.achievements.coins1000 && state.totalEarned >= 1000){
+        state.achievements.coins1000 = true;
+        notify('Achievement unlocked: 1,000 Coins!');
+      }
+    }
+
+    function notify(msg){
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(()=> t.style.opacity = '0', 2400);
+      setTimeout(()=> t.remove(), 3000);
+    }
+
+    // Mouse-only click handling:
+    // Use pointerdown and require pointerType === 'mouse' and event.isTrusted === true
+    // This avoids counting keyboard, touch, or synthetic clicks.
+    clickBtn.addEventListener('pointerdown', (e) => {
+      // Some browsers may not set pointerType for mouse; check defensively
+      const pt = e.pointerType || (e instanceof PointerEvent ? e.pointerType : '');
+      const isMouse = pt === 'mouse';
+      if (!isMouse || !e.isTrusted) {
+        // show a short notice that the input was ignored
+        attemptNotice.style.display = 'block';
+        attemptNotice.textContent = 'Input ignored: only real physical mouse clicks count.';
+        setTimeout(()=> attemptNotice.style.display = 'none', 1200);
+        return;
+      }
+      // legitimate mouse click
+      const value = state.clickValue;
+      state.coins += value;
+      state.totalEarned += value;
+      state.totalClicks += 1;
+      animateClick();
+      checkAchievements();
+      render();
+    });
+
+    function animateClick(){
+      clickBtn.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(0.96)' },
+        { transform: 'scale(1)' }
+      ], { duration: 120, easing: 'ease-out' });
+    }
+
+    // Passive income tick
+    let lastTick = Date.now();
+    function tick(){
+      const now = Date.now();
+      const dt = Math.min(1, (now - lastTick)/1000);
+      lastTick = now;
+      const cps = earnedCPS();
+      if (cps > 0){
+        const delta = cps * dt;
+        state.coins += delta;
+        state.totalEarned += delta;
+        render();
+        checkAchievements();
+      }
+    }
+    setInterval(tick, 250);
+
+    // Auto-save every 10s
+    setInterval(()=> saveState(), 10000);
+
+    // Manual save/reset
+    saveBtn.addEventListener('click', saveState);
+    resetBtn.addEventListener('click', ()=>{
+      if (!confirm('Reset game? This will erase local progress.')) return;
+      state = structuredClone(defaultState);
+      saveState();
+      render();
+    });
+
+    // Initialize UI
+    function init(){
+      render();
+    }
+    init();
+
+    // Save on unload
+    window.addEventListener('beforeunload', saveState);
+
+    // Note: intentionally no keyboard shortcut handlers and clicks are only counted from real mouse input.
+  </script>
+</body>
+</html>
