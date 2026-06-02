@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bob</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #fff;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(0, 188, 212, 0.06);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+    position: relative;
+  }
+  .header .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #00bcd4;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .header h1 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: #00e5ff;
+  }
+  .back-btn {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: #00e5ff; }
+  .server-banner {
+    padding: 6px;
+    text-align: center;
+    font-size: 0.75rem;
+    background: rgba(255, 50, 50, 0.1);
+    color: #ff5555;
+    display: none;
+  }
+  .circle-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #jarvisCanvas {
+    cursor: pointer;
+  }
+  .response-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    pointer-events: none;
+  }
+  .response-text {
+    max-width: 600px;
+    font-size: 1.25rem;
+    line-height: 1.7;
+    text-align: center;
+    color: #e0e0e0;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+    background: rgba(10,10,26,0.6);
+    padding: 20px 28px;
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 255, 255, 0.08);
+    transition: opacity 0.5s;
+    opacity: 0;
+  }
+  .response-text.show { opacity: 1; }
+  .wave-area {
+    height: 60px;
+    position: relative;
+    display: none;
+  }
+  .wave-area.active { display: block; }
+  #waveCanvas { width: 100%; height: 60px; }
+  .input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px 20px;
+    background: rgba(0, 188, 212, 0.04);
+    border-top: 1px solid rgba(0, 255, 255, 0.08);
+  }
+  .input-bar input {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 24px;
+    border: none;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: background 0.2s;
+  }
+  .input-bar input:focus { background: rgba(255,255,255,0.1); }
+  .input-bar input::placeholder { color: rgba(255,255,255,0.25); }
+  .icon-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 1.2rem;
+  }
+  .icon-btn:hover { background: rgba(0, 255, 255, 0.15); }
+  .icon-btn.listening { background: rgba(255,50,50,0.3); color: #ff4444; }
+  .send-btn {
+    background: #00bcd4;
+    color: #000;
+  }
+  .send-btn:hover { background: #00e5ff; }
+  .processing-indicator {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0;
+  }
+  .processing-indicator.active { display: flex; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #00bcd4;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+    40% { transform: translateY(-8px); opacity: 1; }
+  }
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back-btn">&larr; Back</a>
+  <span class="status-dot"></span>
+  <h1>BOB</h1>
+</div>
+<div class="server-banner" id="serverBanner">AI server not available — Bob is running in offline mode</div>
+
+<div class="circle-area">
+  <canvas id="jarvisCanvas"></canvas>
+  <div class="response-overlay">
+    <div class="response-text" id="responseText"></div>
+  </div>
+</div>
+
+<div class="wave-area" id="waveArea">
+  <canvas id="waveCanvas"></canvas>
+</div>
+
+<div class="processing-indicator" id="processingIndicator">
+  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+</div>
+
+<div class="input-bar">
+  <button class="icon-btn" id="micBtn" title="Voice input">&#x1f3a4;</button>
+  <input type="text" id="textInput" placeholder="Type a message..." autocomplete="off">
+  <button class="icon-btn send-btn" id="sendBtn">&#x27a4;</button>
+</div>
+
+<script>
+// ============================================================
+// Bob — JARVIS-like AI with British voice & cyan circle
+// ============================================================
+
+// ─── API Config (same as Jarvis & Wong) ─────────────────────
+
+const BOB_API_KEY = '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';
+const BOB_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const BOB_MODEL = 'llama-3.1-8b-instant';
+
+const BOB_SYSTEM_PROMPT = `You are Bob, a British AI assistant. You speak with a refined British accent and always address the user as "sir". You are polite, proper, and slightly witty. Keep responses concise — one or two sentences. Never use markdown or asterisks. Never mention you are AI. Just be Bob.`;
+
+let bobChatHistory = [{ role: 'system', content: BOB_SYSTEM_PROMPT }];
+
+async function askBob(userText) {
+  bobChatHistory.push({ role: 'user', content: userText });
+
+  const body = {
+    model: BOB_MODEL,
+    messages: bobChatHistory,
+    max_tokens: 256,
+    temperature: 0.8,
+  };
+
+  try {
+    const res = await fetch(BOB_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + BOB_API_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error('API error ' + res.status);
+
+    const data = await res.json();
+    const reply = data.choices[0].message.content.trim();
+    bobChatHistory.push({ role: 'assistant', content: reply });
+
+    if (bobChatHistory.length > 22) {
+      bobChatHistory = [bobChatHistory[0], ...bobChatHistory.slice(-20)];
+    }
+
+    return reply;
+  } catch (e) {
+    console.warn('API unavailable, using local responses.', e);
+    return getBobResponse(userText);
+  }
+}
+
+const canvas = document.getElementById('jarvisCanvas');
+const ctx = canvas.getContext('2d');
+const waveCanvas = document.getElementById('waveCanvas');
+const waveCtx = waveCanvas.getContext('2d');
+const responseText = document.getElementById('responseText');
+const textInput = document.getElementById('textInput');
+const micBtn = document.getElementById('micBtn');
+const sendBtn = document.getElementById('sendBtn');
+const waveArea = document.getElementById('waveArea');
+const processingIndicator = document.getElementById('processingIndicator');
+const serverBanner = document.getElementById('serverBanner');
+
+let W, H, R, centerX, centerY;
+let isListening = false;
+let isSpeaking = false;
+let processing = false;
+let volume = 0;
+let speakingWordCount = 0;
+let t = 0;
+let animId;
+
+// Bob's responses
+const bobResponses = [
+  "Certainly, sir. I'm on it.",
+  "Right away, sir.",
+  "As you wish.",
+  "I'll take care of that immediately.",
+  "Consider it done.",
+  "Yes, sir. I've made the necessary adjustments.",
+  "The system is fully operational, sir.",
+  "I've analysed the situation and recommend proceeding.",
+  "Very good, sir. Shall I continue?",
+  "Everything is running smoothly, sir.",
+  "I'm afraid I don't have an answer for that, sir.",
+  "Would you like me to run a full diagnostic?",
+  "I've taken the liberty of optimising the relevant systems.",
+  "Indeed, sir. That would be most efficient.",
+  "I've noted your preference, sir.",
+  "Shall I schedule that for you?",
+  "The readings are within normal parameters, sir.",
+  "I'm detecting no anomalies at this time.",
+  "I'll add that to my queue, sir."
+];
+
+const bobKnowledge = {
+  'hello': 'Good day, sir. How may I be of service?',
+  'hi': 'Hello, sir. It\'s a pleasure to assist you.',
+  'hey': 'Greetings, sir. Bob at your service.',
+  'how are you': 'I\'m functioning optimally, sir. Thank you for asking.',
+  'what is your name': 'I am Bob, sir. Your personal AI assistant, at your disposal.',
+  'who are you': 'I\'m Bob, sir. Think of me as your very own JARVIS — but with a slightly more refined accent.',
+  'weather': 'I\'m afraid my weather sensors are offline at the moment, sir. You\'ll have to look out the window like a commoner.',
+  'time': function() {
+    const now = new Date();
+    return `The current time is ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, sir.`;
+  },
+  'date': function() {
+    const now = new Date();
+    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return `Today is ${now.toLocaleDateString('en-GB', opts)}, sir.`;
+  },
+  'thank': 'You\'re most welcome, sir. It\'s my pleasure.',
+  'thanks': 'Not at all, sir. Happy to help.',
+  'goodbye': 'Goodbye, sir. I\'ll be here if you need me.',
+  'bye': 'Until next time, sir. Take care.',
+  'joke': function() {
+    const jokes = [
+      'Why don\'t scientists trust atoms? Because they make up everything. ... I\'ll see myself out, sir.',
+      'I asked the HAL 9000 for a joke once. He just said "I\'m sorry, Dave. I\'m afraid I can\'t do that." Bit of a killjoy.',
+      'Why did the AI cross the road? To optimise the pathfinding algorithm on the other side, sir.',
+      'A man walked into a bar and said "Ouch." That\'s the whole joke, sir. I found it in a database.',
+    ];
+    return jokes[Math.floor(Math.random() * jokes.length)];
+  },
+  'help': 'You can ask me questions, give me commands, or just chat, sir. I\'m here to assist.',
+  'sing': 'I\'m afraid my vocal synthesiser is not calibrated for musical performance, sir. You wouldn\'t want to hear it.',
+  'default': 'I\'ll look into that for you, sir. Is there anything else you require?'
+};
+
+function getBobResponse(input) {
+  const lower = input.toLowerCase().trim();
+  for (const [key, val] of Object.entries(bobKnowledge)) {
+    if (lower.includes(key)) {
+      return typeof val === 'function' ? val() : val;
+    }
+  }
+  return bobResponses[Math.floor(Math.random() * bobResponses.length)];
+}
+
+// ---- Speech Recognition ----
+let recognition = null;
+let listening = false;
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return false;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-GB';
+  return true;
+}
+
+function startListening() {
+  if (!recognition || listening) return;
+  listening = true;
+  micBtn.classList.add('listening');
+  isListening = true;
+  waveArea.classList.add('active');
+
+  recognition.onresult = (event) => {
+    const result = event.results[event.results.length - 1];
+    const text = result[0].transcript;
+    if (result.isFinal) {
+      textInput.value = text;
+      stopListening();
+      sendMessage(text);
+    }
+  };
+  recognition.onend = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+    isListening = false;
+    waveArea.classList.remove('active');
+  };
+  recognition.onerror = () => {
+    stopListening();
+  };
+  try { recognition.start(); } catch (e) { stopListening(); }
+}
+
+function stopListening() {
+  if (!recognition || !listening) return;
+  listening = false;
+  micBtn.classList.remove('listening');
+  isListening = false;
+  waveArea.classList.remove('active');
+  try { recognition.stop(); } catch (e) {}
+}
+
+micBtn.addEventListener('click', () => {
+  if (listening) { stopListening(); return; }
+  if (!recognition && !initSpeech()) {
+    alert('Speech recognition not available in this browser. Try Chrome or Edge.');
+    return;
+  }
+  startListening();
+});
+
+// ---- Text-to-Speech (British) ----
+function speak(text) {
+  return new Promise((resolve) => {
+    if (!window.speechSynthesis) { resolve(); return; }
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/\*+/g, '').replace(/, /g, ' ');
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'en-GB';
+    u.rate = 1.1;
+    u.pitch = 1.1;
+    u.volume = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    const pref = voices.find(v => v.name === 'Google UK English Male')
+      || voices.find(v => v.name === 'Daniel')
+      || voices.find(v => /UK|British|England/i.test(v.name) && v.lang.startsWith('en-GB'))
+      || voices.find(v => v.lang.startsWith('en-GB'))
+      || voices.find(v => /male/i.test(v.name) && v.lang.startsWith('en'));
+    if (pref) { u.voice = pref; u.lang = pref.lang; }
+
+    isSpeaking = true;
+    speakingWordCount = clean.split(' ').length;
+    u.onend = () => { isSpeaking = false; speakingWordCount = 0; resolve(); };
+    u.onerror = () => { isSpeaking = false; speakingWordCount = 0; resolve(); };
+    window.speechSynthesis.speak(u);
+  });
+}
+
+// ---- Preload voices ----
+window.speechSynthesis.getVoices();
+window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+
+// ---- Send message ----
+async function sendMessage(text) {
+  if (!text.trim() || processing) return;
+  processing = true;
+  processingIndicator.classList.add('active');
+  textInput.value = '';
+
+  const response = await askBob(text);
+  responseText.textContent = response;
+  responseText.classList.add('show');
+
+  await speak(response);
+
+  processing = false;
+  processingIndicator.classList.remove('active');
+}
+
+textInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage(textInput.value);
+});
+sendBtn.addEventListener('click', () => sendMessage(textInput.value));
+
+// ---- Canvas Resize ----
+function resize() {
+  const area = canvas.parentElement;
+  const rect = area.getBoundingClientRect();
+  const size = Math.min(rect.width, rect.height, 700);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  W = size; H = size; R = size / 2 - 8;
+  centerX = size / 2; centerY = size / 2;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Wave canvas
+  const waveRect = waveCanvas.parentElement.getBoundingClientRect();
+  waveCanvas.width = waveRect.width * dpr;
+  waveCanvas.height = 60 * dpr;
+  waveCanvas.style.width = waveRect.width + 'px';
+  waveCanvas.style.height = '60px';
+  waveCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---- Drawing ----
+const CYAN = '#00e5ff';
+const CYAN2 = '#00bcd4';
+const CYAN3 = '#18ffff';
+
+function draw() {
+  t += 0.016;
+  ctx.clearRect(0, 0, W, H);
+  const r = R;
+  const cx = centerX, cy = centerY;
+  const pulse = isListening ? (Math.sin(t * 2.5) * 0.4 + 0.6) : 0.35;
+  const glow = pulse * 1.8;
+
+  // Ambient glow
+  for (let k = 0; k < 4; k++) {
+    const ox = Math.cos(t * 0.1 + k * 1.5) * r * 0.08;
+    const oy = Math.sin(t * 0.13 + k * 2.1) * r * 0.08;
+    const grd = ctx.createRadialGradient(cx+ox, cy+oy, 0, cx+ox, cy+oy, r * (0.9 - k*0.12));
+    grd.addColorStop(0, `rgba(0, 229, 255, ${(0.12 - k*0.025) * glow})`);
+    grd.addColorStop(0.4, `rgba(0, 229, 255, ${(0.04 - k*0.01) * glow})`);
+    grd.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx+ox, cy+oy, r * (0.9 - k*0.12), 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+
+  // Outer bloom
+  const bloom = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.3);
+  bloom.addColorStop(0, `rgba(0, 229, 255, ${0.06 * glow})`);
+  bloom.addColorStop(1, 'transparent');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 1.3, 0, Math.PI*2);
+  ctx.fillStyle = bloom;
+  ctx.fill();
+
+  // Hexagonal frame
+  const hex = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (i/6)*Math.PI*2 - Math.PI/2 + t*0.04;
+    const w = 0.03 * Math.sin(t*0.3 + i*2.1);
+    hex.push({ x: cx + Math.cos(a)*r*(0.95+w), y: cy + Math.sin(a)*r*(0.95+w) });
+  }
+  ctx.beginPath();
+  ctx.moveTo(hex[0].x, hex[0].y);
+  for (let i = 1; i < 6; i++) ctx.lineTo(hex[i].x, hex[i].y);
+  ctx.closePath();
+  ctx.strokeStyle = `rgba(0, 229, 255, 0.25)`;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.strokeStyle = `rgba(0, 229, 255, 0.05)`;
+  ctx.lineWidth = 6;
+  ctx.filter = 'blur(5px)';
+  ctx.stroke();
+  ctx.filter = 'none';
+
+  // Vertex nodes
+  for (let i = 0; i < 6; i++) {
+    const b = 0.5 + 0.5 * Math.sin(t*0.5 + i*1.7);
+    ctx.beginPath();
+    ctx.arc(hex[i].x, hex[i].y, 4+2*b, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.12*b})`;
+    ctx.filter = 'blur(6px)';
+    ctx.fill();
+    ctx.filter = 'none';
+    ctx.beginPath();
+    ctx.arc(hex[i].x, hex[i].y, 2+b, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.6*b})`;
+    ctx.fill();
+  }
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.92, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(0, 188, 212, 0.3)`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.92, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(0, 229, 255, ${0.07*glow})`;
+  ctx.lineWidth = 8;
+  ctx.filter = 'blur(5px)';
+  ctx.stroke();
+  ctx.filter = 'none';
+
+  // Scanning arc (half circle)
+  const halfAngle = t * 0.3;
+  for (let layer = 0; layer < 4; layer++) {
+    const w = [12, 6, 3, 1.5][layer];
+    const op = [0.06, 0.12, 0.3, 0.5][layer] * glow;
+    const off = layer * 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*1.04+off, halfAngle, halfAngle+Math.PI);
+    ctx.strokeStyle = `rgba(0, 229, 255, ${op})`;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    if (layer < 2) ctx.filter = 'blur(8px)';
+    ctx.stroke();
+    ctx.filter = 'none';
+  }
+  // Endpoint glow dots
+  for (let side = 0; side < 2; side++) {
+    const a = halfAngle + (side === 0 ? 0 : Math.PI);
+    const epx = cx + Math.cos(a)*r*1.04;
+    const epy = cy + Math.sin(a)*r*1.04;
+    ctx.beginPath();
+    ctx.arc(epx, epy, 5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, 0.25)`;
+    ctx.filter = 'blur(6px)';
+    ctx.fill();
+    ctx.filter = 'none';
+    ctx.beginPath();
+    ctx.arc(epx, epy, 2, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, 0.8)`;
+    ctx.fill();
+  }
+
+  // Dashed rings
+  drawDashes(ctx, cx, cy, r*0.82, 16, t*0.12, `rgba(0, 188, 212, 0.18)`, 1.2, 0.3, 0.55);
+  drawDashes(ctx, cx, cy, r*0.65, 10, -t*0.25, `rgba(0, 188, 212, 0.12)`, 0.9, 0.2, 0.45);
+
+  // Inner partial arcs
+  for (let i = 0; i < 5; i++) {
+    const a0 = (i/5)*Math.PI*2 + Math.sin(t*0.08+i)*0.2 + t*0.06;
+    const sweep = Math.PI/3 + 0.3*Math.sin(t*0.2+i*2.3);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*0.46, a0, a0+sweep);
+    ctx.strokeStyle = `rgba(0, 229, 255, ${0.1+0.05*Math.sin(t*0.3+i)})`;
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // Innermost dashes
+  drawDashes(ctx, cx, cy, r*0.28, 8, t*0.5, `rgba(0, 188, 212, 0.1)`, 0.6, 0.1, 0.3);
+
+  // Main scanning arc
+  const sweepMain = Math.PI/2.2;
+  const arcAngle = t * 0.5;
+  for (let layer = 0; layer < 4; layer++) {
+    const w = [10, 6, 3, 1.5][layer];
+    const op = [0.08, 0.15, 0.4, 0.65][layer] * pulse;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*0.74+layer*1.5, arcAngle-sweepMain/2, arcAngle+sweepMain/2);
+    ctx.strokeStyle = `rgba(0, 229, 255, ${op})`;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    if (layer < 2) ctx.filter = 'blur(6px)';
+    ctx.stroke();
+    ctx.filter = 'none';
+  }
+
+  // Secondary scanning arc (CCW)
+  const sweepSec = Math.PI/3.5;
+  const arcAngle2 = -t*0.35 + 0.7;
+  for (let layer = 0; layer < 3; layer++) {
+    const w = [6, 3, 1.2][layer];
+    const op = [0.05, 0.12, 0.25][layer] * pulse;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*0.52+layer, arcAngle2-sweepSec/2, arcAngle2+sweepSec/2);
+    ctx.strokeStyle = `rgba(0, 188, 212, ${op})`;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    if (layer < 1) ctx.filter = 'blur(5px)';
+    ctx.stroke();
+    ctx.filter = 'none';
+  }
+
+  // Chasing dots
+  for (let side = 0; side < 2; side++) {
+    const a = arcAngle + (side === 0 ? -1 : 1) * sweepMain/2;
+    for (let j = 0; j < 3; j++) {
+      const spread = a + (j-1)*0.06;
+      const chaseR = r*(0.74 + j*0.02);
+      ctx.beginPath();
+      ctx.arc(cx+Math.cos(spread)*chaseR, cy+Math.sin(spread)*chaseR, 2.5-j*0.5, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0, 229, 255, ${0.6-j*0.15})`;
+      ctx.fill();
+    }
+  }
+
+  // Radial energy lines
+  for (let i = 0; i < 9; i++) {
+    const base = (i/9)*Math.PI*2;
+    const off = 0.15*Math.sin(i*1.7) + 0.08*Math.sin(t*0.1+i*0.9);
+    const a = base + off + t*0.05;
+    const inner = r*(0.12+0.06*Math.sin(i*2.3+t*0.2));
+    const outer = r*(0.78+0.1*Math.sin(i*1.1+t*0.15));
+    const bright = 0.15 + 0.1*Math.sin(t*0.3+i*1.3);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*inner, cy+Math.sin(a)*inner);
+    ctx.lineTo(cx+Math.cos(a)*outer, cy+Math.sin(a)*outer);
+    ctx.strokeStyle = `rgba(0, 188, 212, ${bright})`;
+    ctx.lineWidth = 0.6 + 0.4*Math.sin(i*2.7);
+    ctx.stroke();
+  }
+
+  // Data streams (CW)
+  for (let i = 0; i < 12; i++) {
+    const a = (i/12)*Math.PI*2 + t*0.6 + Math.sin(t*0.4+i*0.5)*0.08;
+    const drift = 0.04*Math.sin(t*0.7+i*1.1);
+    const dR = r*(0.88+drift);
+    const s = 1.2 + 1.8*(((i/12)*Math.PI*2 + t*0.6) % 1.0);
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*dR, cy+Math.sin(a)*dR, Math.max(0.3, Math.min(3, s)), 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.2+0.4*Math.sin(t+i)})`;
+    ctx.fill();
+  }
+
+  // Data streams (CCW)
+  for (let i = 0; i < 8; i++) {
+    const a = (i/8)*Math.PI*2 - t*0.45 + Math.sin(t*0.5+i*0.7)*0.06;
+    const dR = r*(0.86 + 0.03*Math.sin(t*0.8+i));
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*dR, cy+Math.sin(a)*dR, 1.5+Math.sin(t*0.9+i*1.3), 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 188, 212, ${0.15+0.25*Math.sin(t+i)})`;
+    ctx.fill();
+  }
+
+  // Inner polygon
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = (i/5)*Math.PI*2 - Math.PI/2 + t*0.04;
+    const wr = r*(0.32+0.06*Math.sin(i*1.3+t*0.15));
+    const x = cx + Math.cos(a)*wr;
+    const y = cy + Math.sin(a)*wr;
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = `rgba(0, 188, 212, 0.06)`;
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+  ctx.fillStyle = `rgba(0, 229, 255, 0.015)`;
+  ctx.fill();
+
+  // Cardinal nodes
+  for (let i = 0; i < 8; i++) {
+    const a = (i/8)*Math.PI*2;
+    const nR = r*0.92;
+    const b2 = 0.4 + 0.6*Math.abs(Math.sin(t*0.3+i*2.3));
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*nR, cy+Math.sin(a)*nR, 3*b2, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.1*b2})`;
+    ctx.filter = 'blur(5px)';
+    ctx.fill();
+    ctx.filter = 'none';
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*nR, cy+Math.sin(a)*nR, 1.5*b2, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.5*b2})`;
+    ctx.fill();
+  }
+
+  // Central core glow
+  for (let k = 0; k < 5; k++) {
+    const cr = [0.5, 0.4, 0.3, 0.2, 0.1][k];
+    const ops = [0.2, 0.25, 0.35, 0.5, 0.7];
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r*cr);
+    grd.addColorStop(0, `rgba(0, 229, 255, ${ops[k]*glow})`);
+    grd.addColorStop(0.5, `rgba(0, 229, 255, ${ops[k]*glow*0.2})`);
+    grd.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*cr, 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+
+  // Hot inner core
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, r*0.4);
+  core.addColorStop(0, '#ffffff');
+  core.addColorStop(0.05, 'rgba(255,255,255,0.95)');
+  core.addColorStop(0.12, 'rgba(0, 229, 255, 0.9)');
+  core.addColorStop(0.25, `rgba(0, 188, 212, ${0.5*glow})`);
+  core.addColorStop(0.45, `rgba(0, 188, 212, ${0.15*glow})`);
+  core.addColorStop(0.7, 'transparent');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.4, 0, Math.PI*2);
+  ctx.fillStyle = core;
+  ctx.fill();
+
+  // Core bloom
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.15, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(0, 188, 212, ${0.15*glow})`;
+  ctx.filter = 'blur(12px)';
+  ctx.fill();
+  ctx.filter = 'none';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.08, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(0, 229, 255, ${0.2*glow})`;
+  ctx.filter = 'blur(8px)';
+  ctx.fill();
+  ctx.filter = 'none';
+
+  // White center
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.06, 0, Math.PI*2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.04, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.02, 0, Math.PI*2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // Orbiting dots (elliptical)
+  for (let i = 0; i < 6; i++) {
+    const speed = 0.3 + i*0.07;
+    const baseR = 0.25 + i*0.06;
+    const a = (i/6)*Math.PI*2 + t*speed;
+    const sx = 1.0 + 0.15*Math.sin(i*1.1);
+    const sy = 1.0 - 0.15*Math.sin(i*1.1);
+    const dist = r*(baseR + 0.08*Math.sin(t*0.5+i*1.3));
+    const x = cx + Math.cos(a)*dist*sx;
+    const y = cy + Math.sin(a)*dist*sy;
+    const op = 0.4 + 0.6*(0.5 + 0.5*Math.sin(t*0.7+i*1.1));
+    ctx.beginPath();
+    ctx.arc(x, y, 5+2*op, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.08*op})`;
+    ctx.filter = 'blur(5px)';
+    ctx.fill();
+    ctx.filter = 'none';
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5+1.0*op, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${0.7*op})`;
+    ctx.fill();
+  }
+
+  // Micro particles
+  for (let i = 0; i < 12; i++) {
+    const a = i*1.1 + t*(1.0+i*0.03);
+    const dist = r*(0.06 + 0.04*Math.sin(t*1.2+i*0.7));
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*dist, cy+Math.sin(a)*dist, 0.8+0.4*Math.sin(t*1.8+i), 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${0.3+0.3*Math.sin(t+i)})`;
+    ctx.fill();
+  }
+
+  // Energy arcs near core
+  for (let i = 0; i < 4; i++) {
+    const a0 = (i/4)*Math.PI*2 + t*0.15 + 0.2*Math.sin(i*2.3);
+    const arcS = Math.PI/5 + 0.15*Math.sin(t*0.2+i);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*(0.12+0.02*i), a0, a0+arcS);
+    ctx.strokeStyle = `rgba(0, 229, 255, ${0.2+0.1*Math.sin(t*0.5+i)})`;
+    ctx.lineWidth = 1.2 - i*0.2;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // Pulsing scan rings when listening
+  if (isListening) {
+    for (let ring = 0; ring < 3; ring++) {
+      const rp = t*1.5 + ring*2.1;
+      const rs = 0.5 + 0.5*Math.sin(rp);
+      const ro = ring*0.12;
+      const rad = r*(0.4+ro+rs*0.35);
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0, 229, 255, ${0.06*(1-rs)/(ring+1)})`;
+      ctx.lineWidth = 1.5*(1-rs)/(ring+1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0, 229, 255, ${0.03*(1-rs)/(ring+1)})`;
+      ctx.lineWidth = 3*(1-rs)/(ring+1);
+      ctx.filter = 'blur(5px)';
+      ctx.stroke();
+      ctx.filter = 'none';
+    }
+  }
+
+  // Speaking pulse
+  if (isSpeaking) {
+    const wordRhythm = speakingWordCount > 0 ? t * speakingWordCount * 0.4 : t * 2.0;
+    const beat = 0.5 + 0.5*Math.sin(wordRhythm);
+    const beat2 = 0.5 + 0.5*Math.sin(wordRhythm*1.7+1.2);
+    for (let ring = 0; ring < 4; ring++) {
+      const phase = wordRhythm + ring*1.5;
+      const pulse2 = 0.5 + 0.5*Math.sin(phase);
+      const rad = r*(0.25+ring*0.12+pulse2*0.1);
+      const op = Math.max(0, Math.min(0.1, (0.1-ring*0.018)*pulse2));
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0, 229, 255, ${op})`;
+      ctx.lineWidth = 2.5 - ring*0.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0, 188, 212, ${(op*0.5).toFixed(3)})`;
+      ctx.lineWidth = 5.0 - ring*1.0;
+      ctx.filter = 'blur(8px)';
+      ctx.stroke();
+      ctx.filter = 'none';
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = (i/6)*Math.PI*2 + t*0.6 + beat*0.3;
+      const len = Math.PI/4 + 0.3*Math.sin(wordRhythm*0.7+i);
+      const dist = r*(0.45+0.25*(0.5+0.5*Math.sin(wordRhythm*0.5+i*1.1)));
+      ctx.beginPath();
+      ctx.arc(cx, cy, dist, a, a+len);
+      ctx.strokeStyle = `rgba(0, 229, 255, ${0.06+0.05*beat2})`;
+      ctx.lineWidth = 1.5+beat;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+    const streamSpeed = 0.6 + beat*0.8;
+    for (let i = 0; i < 12; i++) {
+      const a = (i/12)*Math.PI*2 + t*streamSpeed + Math.sin(t*0.4+i*0.5)*0.08;
+      const dR = r*(0.88 + 0.04*Math.sin(t*0.7+i*1.1));
+      const s = 1.2 + 2.5*(((i/12)*Math.PI*2 + t*streamSpeed)%1.0);
+      ctx.beginPath();
+      ctx.arc(cx+Math.cos(a)*dR, cy+Math.sin(a)*dR, Math.max(0.3, Math.min(4, s)), 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0, 229, 255, ${0.2+0.5*beat})`;
+      ctx.fill();
+    }
+  }
+
+  // Ambient breathing ring
+  const breath = Math.sin(t*0.3+0.5)*0.5+0.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*(0.55+breath*0.035), 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(0, 188, 212, ${0.04+0.02*breath})`;
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+
+  animId = requestAnimationFrame(draw);
+}
+
+function drawDashes(ctx, cx, cy, radius, segments, phase, color, sw, minGap, maxGap) {
+  ctx.beginPath();
+  for (let i = 0; i < segments; i++) {
+    const start = (i/segments)*Math.PI*2 + phase;
+    const gap = minGap + (maxGap-minGap)*(0.5+0.5*Math.sin(i*2.3));
+    const end = ((i+gap)/segments)*Math.PI*2 + phase;
+    ctx.arc(cx, cy, radius, start, end);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = sw;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+// ---- Wave Visualisation ----
+function drawWave() {
+  if (!waveArea.classList.contains('active')) { requestAnimationFrame(drawWave); return; }
+  const wr = waveCanvas.width / (window.devicePixelRatio || 1);
+  const wh = 60;
+  waveCtx.clearRect(0, 0, wr, wh);
+
+  const baseAmp = wh*0.15 + volume*wh*0.5;
+  const freqs = [2, 3, 5];
+  const ops2 = [0.12, 0.08, 0.05];
+  const sws = [3, 2, 1];
+
+  for (let f = 0; f < freqs.length; f++) {
+    waveCtx.beginPath();
+    const speed = 1.0 + f*0.3;
+    for (let x = 0; x < wr; x++) {
+      const nx = x/wr;
+      const env = 1 - Math.abs(nx-0.5)*2;
+      const y = wh/2 + Math.sin(nx*freqs[f]*Math.PI*2 + t*speed)*baseAmp*env*(0.5+volume*0.5);
+      x === 0 ? waveCtx.moveTo(x,y) : waveCtx.lineTo(x,y);
+    }
+    waveCtx.strokeStyle = `rgba(0, 229, 255, ${ops2[f]})`;
+    waveCtx.lineWidth = sws[f];
+    waveCtx.stroke();
+  }
+  requestAnimationFrame(drawWave);
+}
+
+// ---- Pulse animation for circle click ----
+canvas.addEventListener('click', () => {
+  if (processing) return;
+  if (!recognition && !initSpeech()) { return; }
+  if (listening) { stopListening(); return; }
+  startListening();
+});
+
+// ---- Click outside text to hide ----
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.response-text') && !e.target.closest('canvas') && !e.target.closest('.input-bar')) {
+    responseText.classList.remove('show');
+  }
+});
+
+// ---- Start ----
+initSpeech();
+resize();
+draw();
+drawWave();
+
+console.log('Bob is ready, sir.');
+</script>
+</body>
+</html>
